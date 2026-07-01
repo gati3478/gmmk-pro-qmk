@@ -20,6 +20,10 @@ enum custom_keycodes {
 enum knob_modes { KNOB_SCROLL, KNOB_UNDO };
 static uint8_t knob_mode = KNOB_SCROLL;
 
+static bool is_mac(void) {
+    return detected_host_os() != OS_LINUX; // default to macOS when unsure
+}
+
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_BASE] = LAYOUT(
@@ -44,14 +48,22 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (!record->event.pressed) return true;
     switch (keycode) {
-        case OS_SHOT_CLIP: tap_code16(LCTL(LGUI(LSFT(KC_4)))); return false; // Ctrl+Cmd+Shift+4
-        case OS_SHOT_FILE: tap_code16(LGUI(LSFT(KC_4)));       return false; // Cmd+Shift+4
-        case OS_MCTL:      tap_code16(LCTL(KC_UP));            return false; // macOS Mission Control = Ctrl+Up
-        case OS_SPOT:      tap_code16(LGUI(KC_SPC));           return false;
-        case OS_WORD_L:    tap_code16(LALT(KC_LEFT));          return false;
-        case OS_WORD_R:    tap_code16(LALT(KC_RGHT));          return false;
-        case OS_DOC_UP:    tap_code16(LGUI(KC_UP));            return false;
-        case OS_DOC_DN:    tap_code16(LGUI(KC_DOWN));          return false;
+        case OS_SHOT_CLIP:
+            tap_code16(is_mac() ? LCTL(LGUI(LSFT(KC_4))) : LCTL(LSFT(KC_PSCR))); return false;
+        case OS_SHOT_FILE:
+            tap_code16(is_mac() ? LGUI(LSFT(KC_4)) : LSFT(KC_PSCR)); return false;
+        case OS_MCTL:
+            if (is_mac()) tap_code16(LCTL(KC_UP)); else tap_code(KC_LGUI); return false; // Mac Ctrl+Up / Linux Super=overview
+        case OS_SPOT:
+            if (is_mac()) tap_code16(LGUI(KC_SPC)); else tap_code(KC_LGUI); return false; // Linux: Super=search
+        case OS_WORD_L:
+            tap_code16(is_mac() ? LALT(KC_LEFT) : LCTL(KC_LEFT)); return false;
+        case OS_WORD_R:
+            tap_code16(is_mac() ? LALT(KC_RGHT) : LCTL(KC_RGHT)); return false;
+        case OS_DOC_UP:
+            tap_code16(is_mac() ? LGUI(KC_UP)   : LCTL(KC_HOME)); return false;
+        case OS_DOC_DN:
+            tap_code16(is_mac() ? LGUI(KC_DOWN) : LCTL(KC_END));  return false;
         case KNOB_MODE:
             knob_mode = (knob_mode == KNOB_SCROLL) ? KNOB_UNDO : KNOB_SCROLL;
             return false;
@@ -65,8 +77,10 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
     if (get_highest_layer(layer_state) == _FN) {
         if (knob_mode == KNOB_SCROLL) {
             tap_code16(clockwise ? MS_WHLU : MS_WHLD); // clockwise = wheel up (flipped per feel); MS_WH* are current names
-        } else { // KNOB_UNDO (macOS combos for now; OS-aware in Task 4)
-            tap_code16(clockwise ? LGUI(LSFT(KC_Z)) : LGUI(KC_Z)); // redo / undo
+        } else { // KNOB_UNDO
+            uint16_t undo = is_mac() ? LGUI(KC_Z)        : LCTL(KC_Z);
+            uint16_t redo = is_mac() ? LGUI(LSFT(KC_Z))  : LCTL(LSFT(KC_Z));
+            tap_code16(clockwise ? redo : undo);
         }
     } else {
         tap_code(clockwise ? KC_VOLU : KC_VOLD);
