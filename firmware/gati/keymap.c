@@ -17,6 +17,9 @@ enum custom_keycodes {
 #define MAC_DICT LCTL(LALT(LGUI(KC_D)))
 #define MAC_DND  LCTL(LALT(LGUI(KC_N)))
 
+enum knob_modes { KNOB_SCROLL, KNOB_UNDO };
+static uint8_t knob_mode = KNOB_SCROLL;
+
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_BASE] = LAYOUT(
@@ -49,7 +52,24 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case OS_WORD_R:    tap_code16(LALT(KC_RGHT));          return false;
         case OS_DOC_UP:    tap_code16(LGUI(KC_UP));            return false;
         case OS_DOC_DN:    tap_code16(LGUI(KC_DOWN));          return false;
-        // KNOB_MODE -> Task 3, SIDE_TOGG -> Task 6
+        case KNOB_MODE:
+            knob_mode = (knob_mode == KNOB_SCROLL) ? KNOB_UNDO : KNOB_SCROLL;
+            return false;
+        // SIDE_TOGG -> Task 6
     }
     return true;
+}
+
+bool encoder_update_user(uint8_t index, bool clockwise) {
+    if (index != 0) return false;
+    if (get_highest_layer(layer_state) == _FN) {
+        if (knob_mode == KNOB_SCROLL) {
+            tap_code16(clockwise ? MS_WHLD : MS_WHLU); // MS_WH* are the current names; sent via tap_code16
+        } else { // KNOB_UNDO (macOS combos for now; OS-aware in Task 4)
+            tap_code16(clockwise ? LGUI(LSFT(KC_Z)) : LGUI(KC_Z)); // redo / undo
+        }
+    } else {
+        tap_code(clockwise ? KC_VOLU : KC_VOLD);
+    }
+    return false;
 }
