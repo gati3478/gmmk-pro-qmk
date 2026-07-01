@@ -64,7 +64,7 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
     if (index != 0) return false;
     if (get_highest_layer(layer_state) == _FN) {
         if (knob_mode == KNOB_SCROLL) {
-            tap_code16(clockwise ? MS_WHLD : MS_WHLU); // MS_WH* are the current names; sent via tap_code16
+            tap_code16(clockwise ? MS_WHLU : MS_WHLD); // clockwise = wheel up (flipped per feel); MS_WH* are current names
         } else { // KNOB_UNDO (macOS combos for now; OS-aware in Task 4)
             tap_code16(clockwise ? LGUI(LSFT(KC_Z)) : LGUI(KC_Z)); // redo / undo
         }
