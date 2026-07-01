@@ -17,7 +17,8 @@ it, the hardware it runs on, and how to build/flash it.
 | **Build steps** (toolchain → firmware → flash, task by task)         | [`docs/PLAN.md`](docs/PLAN.md)                   |
 | **Hardware** (parts, specs, build mods, spare keycaps, purchase log) | [`docs/HARDWARE.md`](docs/HARDWARE.md)           |
 | **macOS one-time settings** (Caps→input, Dictation, DND)             | [`docs/macos-setup.md`](docs/macos-setup.md)     |
-| **Firmware source** (the real thing, once built)                     | `firmware/gati/{keymap.c,config.h,rules.mk}`     |
+| **Firmware source** (the actual keymap — source of truth)            | `firmware/gati/{keymap.c,config.h,rules.mk}`     |
+| **Build/flash tool** (symlinks into QMK → compile/flash)             | `scripts/flash.sh`                               |
 | **RGB color explorer**                                               | [`docs/rgb-preview.html`](docs/rgb-preview.html) |
 | **Recovered original firmware** (provenance, not reused)             | `reference/`                                     |
 
@@ -27,6 +28,8 @@ Never let the docs and `firmware/gati/` disagree.
 ---
 
 ## Status (2026-07-01)
+
+_Single source of truth for build status — `README.md` and `docs/DESIGN.md` point here._
 
 - ✅ Design complete & approved (`docs/DESIGN.md`).
 - ✅ Implementation plan written (`docs/PLAN.md`, 7 tasks).
@@ -77,7 +80,7 @@ Full maps and the "why" behind every choice: [`docs/DESIGN.md`](docs/DESIGN.md).
 ./scripts/flash.sh flash       # build + flash (put board in bootloader first)
 ```
 
-- One-time toolchain: `brew install qmk/qmk/qmk` then `qmk setup` (see `docs/DESIGN.md` §12).
+- One-time toolchain: `brew install qmk/qmk/qmk` then `qmk setup` — **not** a clean two-command install on current macOS; see **Gotchas** below (trust-gates + venv fix) and `docs/DESIGN.md` §12.
 - `flash.sh` symlinks `firmware/gati/` into `~/qmk_firmware/keyboards/gmmk/pro/rev1/ansi/keymaps/gati`,
   so **this repo stays the source of truth** and QMK is just the compiler.
 
@@ -91,6 +94,23 @@ Full maps and the "why" behind every choice: [`docs/DESIGN.md`](docs/DESIGN.md).
 
 `edit docs/DESIGN.md` → `edit firmware/gati/*` → `./scripts/flash.sh compile` → flash → verify on
 hardware → `git commit`. Commit after every working change; never commit `.build/`.
+
+---
+
+## Gotchas (hard-won)
+
+- **RGB / setting defaults don't apply after a flash.** EEPROM survives DFU flashing. To push a new
+  `RGB_MATRIX_DEFAULT_*` or mode, bump `GATI_EECONFIG_VERSION` in `firmware/gati/keymap.c` —
+  `keyboard_post_init_user` re-applies it once. Otherwise the value saved in EEPROM shadows your change.
+- **Toolchain (re)install, macOS:** `brew install qmk/qmk/qmk` needs `brew trust qmk/qmk`, plus
+  `brew tap osx-cross/arm && brew trust osx-cross/arm` (same for `osx-cross/avr`). If `qmk --version`
+  dies on a bad Python interpreter, run `brew reinstall --build-from-source qmk`.
+- **The IDE lies about `keymap.c`.** Standalone clang shows false `undeclared identifier` errors (it
+  lacks QMK's include context). `./scripts/flash.sh compile` is the only source of truth.
+- **QMK renames keycodes across releases.** This build already hit `RGB_*`→`RM_*` and
+  `KC_MS_WH_*`→`MS_WH*`. Before adding RGB / mouse / media keys, grep `~/qmk_firmware/quantum/keycodes.h`.
+- **Board target is `gmmk/pro/rev1/ansi`** (`gmmk/pro/ansi` is an alias that resolves to it). The STM32
+  ROM DFU bootloader is unerasable — the on-PCB reset button always re-enters DFU, so you can't brick it.
 
 ---
 

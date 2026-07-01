@@ -29,4 +29,4 @@ One-time toolchain: `brew install qmk/qmk/qmk` then `qmk setup`.
 
 ## Status
 
-Design ✅ · Plan ✅ · Repo ✅ · **Firmware built, flashed & verified on hardware — v1.0.**
+**v1.0** — built, flashed & verified on hardware. Authoritative status: [`CLAUDE.md`](CLAUDE.md) §Status.

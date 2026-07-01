@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-01
 **Owner:** Gati
-**Status:** Built, flashed & verified on hardware (**v1.0**) — 2-layer keymap, modal knob, reactive-salmon per-key RGB, functional side-LED readout. All 7 plan tasks complete.
+**Status:** v1.0 shipped — see `CLAUDE.md` §Status (authoritative).
 **Firmware base:** Pure mainline QMK (hand-written C). This repository is the single source of truth.
 
 ---
