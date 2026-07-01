@@ -173,7 +173,7 @@ Driven in `rgb_matrix_indicators_advanced_user`, overriding the GMMK Pro edge-LE
 | State                                     | Both side strips                                                                                       |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | USB suspended / idle-timed-out            | Off                                                                                                    |
-| **Caps Lock ON** (real)                   | **Pulsing red** `RGB(255,30,30)` (triangle)                                                            |
+| **Caps Lock ON** (real)                   | **Pulsing red** `RGB(255,0,0)` (triangle)                                                              |
 | **FN layer active** — knob mode Scroll    | **Sage** `RGB(100,190,110)`                                                                            |
 | **FN layer active** — knob mode Undo/Redo | **Amber** `RGB(255,170,40)`                                                                            |
 | Base                                      | **Off** — the strips are a pure Fn/Caps readout; per-key salmon reactive (keylight LEDs) is unaffected |
@@ -235,25 +235,32 @@ NKRO_ENABLE         = yes
 
 ```
 .
-├─ CLAUDE.md                     # project instructions / SSOT pointer (created in impl)
+├─ CLAUDE.md                     # project instructions / SSOT pointer
 ├─ README.md                     # what this is, how to build & flash
 ├─ docs/
 │  ├─ DESIGN.md                  # this spec
-│  └─ rgb-preview.html           # the color visualizer (kept as a design tool)
+│  ├─ PLAN.md                    # task-by-task build record (v1.0)
+│  ├─ HARDWARE.md                # parts, specs, mods, purchase log
+│  ├─ macos-setup.md             # one-time macOS settings
+│  ├─ rgb-preview.html           # the color visualizer (kept as a design tool)
+│  └─ superpowers/               # spec + plan for the tooling overhaul
 ├─ firmware/gati/                # the QMK keymap — the real source
 │  ├─ keymap.c
 │  ├─ config.h
 │  ├─ rules.mk
 │  └─ readme.md
 ├─ scripts/
-│  └─ flash.sh                   # symlink into QMK tree → compile → flash
+│  ├─ flash.sh                   # symlink into QMK tree → compile/flash/setup/…
+│  └─ qmk.pin                    # pinned QMK rev + ARM toolchain (shared with CI)
+├─ .github/workflows/build.yml   # CI: compile-on-push, uploads firmware artifact
 ├─ reference/                    # recovered old firmware, untouched, for provenance
 │  ├─ old-firmware/  (*.elf .hex .bin .map)
 │  └─ gmmk_pro_ansi_layout_mine.json
-└─ .gitignore
+├─ .clang-format · .editorconfig  # C formatting + editor defaults
+└─ .gitattributes · .gitignore
 ```
 
-**Build model:** the firmware lives here; `scripts/flash.sh` symlinks `firmware/gati/` into `~/qmk_firmware/keyboards/gmmk/pro/ansi/keymaps/gati/`, then runs `qmk compile` / `qmk flash`. The repo stays the source of truth; QMK is just the compiler.
+**Build model:** the firmware lives here; `scripts/flash.sh` symlinks `firmware/gati/` into `~/qmk_firmware/keyboards/gmmk/pro/rev1/ansi/keymaps/gati/` (the real rev1 path — `gmmk/pro/ansi` is only a `-kb` alias), then runs `qmk compile` / `qmk flash`. The repo stays the source of truth; QMK is just the compiler.
 
 ---
 
