@@ -35,6 +35,7 @@ _Single source of truth for build status — `README.md` and `docs/DESIGN.md` po
 - ✅ Implementation plan written (`docs/PLAN.md`, 7 tasks).
 - ✅ Repo initialized; original firmware recovered & preserved.
 - ✅ **Built, flashed & verified on hardware (v1.0).** All 7 plan tasks complete.
+- ✅ **v1.1 — post-audit hardening (flashed & verified).** Adversarial audit (auditor + reviewer subagents, cross-checked against QMK source) passed: overall risk low, no brick/hang/corruption paths. Fixes: encoder Volume-blip during a Caps-hold, 32-bit caps-pulse timer. Tooling: `flash.sh` now auto-kills dfu-util wedged on `:leave`. Caps-red side-strip documented as macOS-dormant (`docs/DESIGN.md` §8.2).
 
 ---
 
