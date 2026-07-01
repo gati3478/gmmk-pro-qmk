@@ -257,12 +257,29 @@ NKRO_ENABLE         = yes
 
 ---
 
-## 12. Toolchain setup (macOS, M2) — to be executed in the plan
+## 12. Toolchain, pinning & reproducibility (macOS, M2)
 
-1. `brew install qmk/qmk/qmk`
-2. `qmk setup` (clones `qmk_firmware`, installs the ARM toolchain)
-3. Symlink the keymap, `qmk compile -kb gmmk/pro/ansi -km gati`
-4. Enter bootloader (`Fn+B` or hold-Esc-on-plug-in), `qmk flash …`
+**Install (current method).** `curl -fsSL https://install.qmk.fm | sh` installs the `qmk` CLI and the
+qmk_toolchains ARM compiler (gcc 15.2.0) into `~/Library/Application Support/qmk`, which the CLI
+auto-prepends to PATH. Then `./scripts/flash.sh setup` clones `~/qmk_firmware` at the pinned rev.
+(The older `brew install qmk/qmk/qmk` is stale — it pulls gcc 8 and cannot match CI.)
+
+**Pinning.** `scripts/qmk.pin` records the exact QMK revision (`0.33.8` / `b1093e9`) and ARM toolchain
+(`arm-none-eabi-gcc 15.2.0`, qmk_toolchains commit `a55a2b0`) — the single source of truth shared by
+`flash.sh` (local) and `.github/workflows/build.yml` (CI, which pins the `qmk_cli` container by digest).
+CI verifies the cloned QMK's SHA equals the pin, so a moved tag fails loudly before any hardware.
+
+**Reproducibility — the honest caveat.** Local (macOS, Apple Silicon) and CI (Linux) use the _same_
+qmk_toolchains commit and gcc 15.2.0, so they produce **functionally identical** firmware — but **not**
+bit-for-bit identical. The toolchain bakes its own build-machine path into a newlib-nano `assert` string
+(`host_macosARM64…` locally vs `host_linuxX64…` in CI): a +4-byte inert difference that shifts image
+layout (~1741 bytes differ, **zero** of them machine code). Neither we nor QMK control this without
+building both on the same host OS (a macOS CI runner — declined on cost). So the **local build is
+authoritative** for what gets flashed; CI is the clean-room compile gate + a reference artifact. This
+keymap embeds nothing time- or version-dependent in its `.bin` (`COMMAND`/`CONSOLE` off, no `QMK_VERSION`
+refs), so local rebuilds are themselves deterministic (byte-identical run to run).
+
+**Build/flash.** `./scripts/flash.sh compile` → `flash` (enter bootloader: `Fn+B` or hold-Esc-on-plug-in).
 
 ---
 

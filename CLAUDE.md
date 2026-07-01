@@ -27,7 +27,7 @@ Never let the docs and `firmware/gati/` disagree.
 
 ---
 
-## Status (2026-07-01)
+## Status (2026-07-02)
 
 _Single source of truth for build status — `README.md` and `docs/DESIGN.md` point here._
 
@@ -36,6 +36,7 @@ _Single source of truth for build status — `README.md` and `docs/DESIGN.md` po
 - ✅ Repo initialized; original firmware recovered & preserved.
 - ✅ **Built, flashed & verified on hardware (v1.0).** All 7 plan tasks complete.
 - ✅ **v1.1 — post-audit hardening (flashed & verified).** Adversarial audit (auditor + reviewer subagents, cross-checked against QMK source) passed: overall risk low, no brick/hang/corruption paths. Fixes: encoder Volume-blip during a Caps-hold, 32-bit caps-pulse timer. Tooling: `flash.sh` now auto-kills dfu-util wedged on `:leave`. Caps-red side-strip documented as macOS-dormant (`docs/DESIGN.md` §8.2).
+- ⏳ **Tooling overhaul (branch `tooling-overhaul`).** QMK rev **and** ARM toolchain pinned in `scripts/qmk.pin` (QMK `0.33.8`, gcc `15.2.0`/`a55a2b0`); push-triggered CI (`.github/workflows/build.yml`) compiles in a digest-pinned container and uploads the firmware; `flash.sh` gained `setup/doctor/lint/format/size` + a pin-drift warning. Local toolchain modernized gcc 9.2.1 → 15.2.0 to match CI — builds now functionally identical, differing only by an inert newlib build-path string (`docs/DESIGN.md` §12). Firmware **behavior** unchanged from v1.1. **Remaining:** re-flash the modern-toolchain build (47920 B) + hardware re-verify, then merge.
 
 ---
 
@@ -77,11 +78,24 @@ Full maps and the "why" behind every choice: [`docs/DESIGN.md`](docs/DESIGN.md).
 ## Build & flash
 
 ```bash
-./scripts/flash.sh compile     # build only
-./scripts/flash.sh flash       # build + flash (put board in bootloader first)
+./scripts/flash.sh compile     # build only (warns if the QMK checkout drifts from the pin)
+./scripts/flash.sh flash       # build + flash (put board in bootloader first: Fn+B)
+./scripts/flash.sh setup       # clone/checkout ~/qmk_firmware to the pinned QMK rev (new machine / bump)
+./scripts/flash.sh size        # build + report firmware size vs the 256 KB flash budget
+./scripts/flash.sh lint        # qmk lint (advisory)
+./scripts/flash.sh format      # clang-format the C sources (opt-in; reflows hand-aligned blocks)
+./scripts/flash.sh doctor      # qmk doctor (toolchain preflight)
 ```
 
-- One-time toolchain: `brew install qmk/qmk/qmk` then `qmk setup` — **not** a clean two-command install on current macOS; see **Gotchas** below (trust-gates + venv fix) and `docs/DESIGN.md` §12.
+- **Pinned build.** `scripts/qmk.pin` is the single source of truth for the QMK revision (`0.33.8`)
+  and the ARM toolchain (`arm-none-eabi-gcc 15.2.0`, qmk_toolchains `a55a2b0`), shared by `flash.sh`
+  and CI. `compile`/`flash` warn if `~/qmk_firmware` has drifted off the pinned rev.
+- **CI.** `.github/workflows/build.yml` compiles on every push in the digest-pinned `qmk_cli`
+  container and uploads `gmmk_pro_rev1_ansi_gati.bin`; a SHA-verify step fails loudly if the tag moves.
+- **One-time toolchain (macOS, Apple Silicon):** `curl -fsSL https://install.qmk.fm | sh` installs the
+  `qmk` CLI **and** the qmk_toolchains ARM compiler (gcc 15.2.0) into `~/Library/Application Support/qmk`.
+  Then `./scripts/flash.sh setup` clones `~/qmk_firmware` at the pinned rev. The old
+  `brew install qmk/qmk/qmk` path is **stale** (pulls gcc 8) — see **Gotchas**.
 - `flash.sh` symlinks `firmware/gati/` into `~/qmk_firmware/keyboards/gmmk/pro/rev1/ansi/keymaps/gati`,
   so **this repo stays the source of truth** and QMK is just the compiler.
 
@@ -104,9 +118,14 @@ Backed up to **`github.com/gati3478/gmmk-pro-qmk`** (private; `origin` is SSH �
 - **RGB / setting defaults don't apply after a flash.** EEPROM survives DFU flashing. To push a new
   `RGB_MATRIX_DEFAULT_*` or mode, bump `GATI_EECONFIG_VERSION` in `firmware/gati/keymap.c` —
   `keyboard_post_init_user` re-applies it once. Otherwise the value saved in EEPROM shadows your change.
-- **Toolchain (re)install, macOS:** `brew install qmk/qmk/qmk` needs `brew trust qmk/qmk`, plus
-  `brew tap osx-cross/arm && brew trust osx-cross/arm` (same for `osx-cross/avr`). If `qmk --version`
-  dies on a bad Python interpreter, run `brew reinstall --build-from-source qmk`.
+- **Toolchain install, macOS (current method):** `curl -fsSL https://install.qmk.fm | sh` installs the
+  `qmk` CLI + the qmk_toolchains ARM compiler (gcc 15.2.0) into `~/Library/Application Support/qmk`, which
+  the `qmk` CLI auto-prepends to PATH (no config, shadows any old `/usr/local/bin` gcc). **Don't** use
+  `brew install qmk/qmk/qmk` — the tap is stale, pulling gcc 8 via `osx-cross`, and can't match CI.
+  `install.qmk.fm` always fetches the _latest_ toolchain; to stay matched to `scripts/qmk.pin`, extract the
+  `host_macosARM64` asset of qmk_toolchains `v15.2.0-1` into that dir manually if QMK ships a newer one.
+- **Bumping QMK or the toolchain:** edit `scripts/qmk.pin`, `./scripts/flash.sh setup`, recompile,
+  re-verify on hardware, reflash. CI's SHA-verify guards against a tag silently moving underneath you.
 - **The IDE lies about `keymap.c`.** Standalone clang shows false `undeclared identifier` errors (it
   lacks QMK's include context). `./scripts/flash.sh compile` is the only source of truth.
 - **QMK renames keycodes across releases.** This build already hit `RGB_*`→`RM_*` and

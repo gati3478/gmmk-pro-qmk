@@ -6,7 +6,13 @@
 
 **Architecture:** The firmware lives in `firmware/gati/` here; `scripts/flash.sh` symlinks it into a local `~/qmk_firmware` clone and drives `qmk compile` / `qmk flash`. Behavior is built incrementally: each task adds one capability, compiles clean, and is flashed + verified on hardware before the next. The full key `LAYOUT` is written once (Task 2) and never edited again — later tasks only add handler functions (`process_record_user`, `encoder_update_user`, `rgb_matrix_indicators_advanced_user`) and config.
 
-**Tech Stack:** QMK (mainline), C, ChibiOS/STM32F303, `qmk` CLI via Homebrew, ARM GCC toolchain, `dfu-util`.
+**Tech Stack:** QMK (mainline), C, ChibiOS/STM32F303, `qmk` CLI, ARM GCC toolchain, `dfu-util`.
+
+> **Update (2026-07-02, post-v1.1):** the toolchain + build were modernized on branch `tooling-overhaul`.
+> Task 1's `brew install qmk/qmk/qmk` + `qmk setup` steps below are the original **v1.0** record and are now
+> superseded: the current setup pins QMK **and** the ARM toolchain in [`../scripts/qmk.pin`](../scripts/qmk.pin)
+> (gcc 15.2.0, matched to CI), installs via `curl -fsSL https://install.qmk.fm | sh`, and compiles in CI on
+> every push. Authoritative build steps: `CLAUDE.md` §Build & flash and `docs/DESIGN.md` §12.
 
 ## Global Constraints
 
