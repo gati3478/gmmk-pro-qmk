@@ -93,7 +93,8 @@ Full maps and the "why" behind every choice: [`docs/DESIGN.md`](docs/DESIGN.md).
 ### Change workflow
 
 `edit docs/DESIGN.md` → `edit firmware/gati/*` → `./scripts/flash.sh compile` → flash → verify on
-hardware → `git commit`. Commit after every working change; never commit `.build/`.
+hardware → `git commit` → `git push`. Commit after every working change; never commit `.build/`.
+Backed up to **`github.com/gati3478/gmmk-pro-qmk`** (private; `origin` is SSH → `git push` just works).
 
 ---
 
