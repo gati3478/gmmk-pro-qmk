@@ -24,6 +24,16 @@ static bool is_mac(void) {
     return detected_host_os() != OS_LINUX; // default to macOS when unsure
 }
 
+// DFU flashing never erases EEPROM, so a stale saved RGB effect would shadow the
+// RGB_MATRIX_DEFAULT_* in config.h. Stamp a version in the 4-byte user EEPROM block;
+// when it changes, re-apply the salmon-reactive defaults exactly once (bump to redo later).
+#define GATI_EECONFIG_VERSION 1
+typedef union {
+    uint32_t raw;
+    struct { uint8_t version; };
+} gati_config_t;
+static gati_config_t gati_config;
+
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_BASE] = LAYOUT(
@@ -86,4 +96,15 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
         tap_code(clockwise ? KC_VOLU : KC_VOLD);
     }
     return false;
+}
+
+void keyboard_post_init_user(void) {
+    gati_config.raw = eeconfig_read_user();
+    if (gati_config.version != GATI_EECONFIG_VERSION) {
+        rgb_matrix_enable();                                   // ensure RGB on
+        rgb_matrix_mode(RGB_MATRIX_SOLID_REACTIVE_SIMPLE);     // salmon bloom (persisted)
+        rgb_matrix_sethsv(RGB_MATRIX_DEFAULT_HUE, RGB_MATRIX_DEFAULT_SAT, RGB_MATRIX_DEFAULT_VAL);
+        gati_config.version = GATI_EECONFIG_VERSION;
+        eeconfig_update_user(gati_config.raw);
+    }
 }
