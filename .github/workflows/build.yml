@@ -1,0 +1,47 @@
+name: build
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: ghcr.io/qmk/qmk_cli:latest # digest-pinned in Step 5 after the first green run
+    steps:
+      - name: Checkout firmware repo
+        uses: actions/checkout@v4
+        with:
+          path: fw
+
+      - name: Load pinned QMK revision
+        run: grep -E '^[A-Z_]+=' fw/scripts/qmk.pin >> "$GITHUB_ENV"
+
+      - name: Clone pinned QMK (shallow, with submodules)
+        run: |
+          git clone --depth 1 --branch "$QMK_TAG" \
+            --recurse-submodules --shallow-submodules \
+            https://github.com/qmk/qmk_firmware qmk
+          test "$(git -C qmk rev-parse HEAD)" = "$QMK_SHA" \
+            || { echo "::error::QMK tag $QMK_TAG no longer resolves to $QMK_SHA"; exit 1; }
+
+      - name: Symlink keymap into the QMK tree
+        run: ln -sfn "$PWD/fw/firmware/gati" qmk/keyboards/gmmk/pro/rev1/ansi/keymaps/gati
+
+      - name: Compile
+        working-directory: qmk
+        run: qmk compile -kb gmmk/pro/ansi -km gati
+
+      - name: Lint (advisory)
+        working-directory: qmk
+        run: qmk lint -kb gmmk/pro/ansi -km gati || true
+
+      - name: Report size
+        run: |
+          bin="qmk/gmmk_pro_rev1_ansi_gati.bin"
+          size=$(wc -c < "$bin")
+          echo "### Firmware: $size bytes ($((size * 100 / 262144))% of 256 KB)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload firmware artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gmmk_pro_rev1_ansi_gati
+          path: qmk/gmmk_pro_rev1_ansi_gati.bin
+          if-no-files-found: error
