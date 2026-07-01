@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-01
 **Owner:** Gati
-**Status:** Approved design → ready for implementation plan
+**Status:** Approved — implementation plan written (`docs/PLAN.md`); firmware build not yet started
 **Firmware base:** Pure mainline QMK (hand-written C). This repository is the single source of truth.
 
 ---
@@ -115,7 +115,7 @@ Hold Caps or Fn. Unlisted keys are transparent.
 | Key                | Action                       | Keycode / method                                                                |
 | ------------------ | ---------------------------- | ------------------------------------------------------------------------------- |
 | Fn+F1 / F2         | Brightness − / +             | `KC_BRID` / `KC_BRIU`                                                           |
-| Fn+F3              | Mission Control              | OS-aware: Mac `KC_MCTL`, Linux tap `Super` (GNOME overview)                     |
+| Fn+F3              | Mission Control              | OS-aware: Mac `⌃↑` (default Mission Control shortcut), Linux tap `Super`        |
 | Fn+F4              | Spotlight / search           | OS-aware: Mac `⌘Space`, Linux `Super`                                           |
 | Fn+F5              | **Dictation**                | Emits a fixed combo (`Ctrl+Opt+Cmd+D`); user binds macOS Dictation → same combo |
 | Fn+F6              | **Do Not Disturb / Focus**   | Emits a fixed combo (`Ctrl+Opt+Cmd+N`); user binds via macOS Shortcuts.app      |
@@ -163,7 +163,7 @@ Hold Caps or Fn. Unlisted keys are transparent.
 - **Effect:** `RGB_MATRIX_SOLID_REACTIVE_SIMPLE` — dark base, **salmon bloom on keypress**, fades. (Chosen over literal `TYPING_HEATMAP`, which can't be recolored; feel matches the approved preview.)
 - **Hot color:** salmon ≈ `RGB(255, 120, 90)`.
 - **Brightness:** 64 % ⇒ default matrix value ≈ 163/255.
-- **Sleep:** `RGB_DISABLE_WHEN_USB_SUSPENDED` — off when the Mac suspends USB.
+- **Sleep:** `RGB_MATRIX_SLEEP` — off when the Mac suspends USB.
 - **Idle:** `RGB_MATRIX_TIMEOUT` = 8 min → fade off; any keypress wakes it.
 
 ### 8.2 Side strips — a functional readout (state machine)
@@ -216,7 +216,7 @@ NKRO_ENABLE         = yes
 #define TAPPING_TERM 200
 #define HOLD_ON_OTHER_KEY_PRESS            // snappy Fn nav-layer while chording
 #define RGB_MATRIX_TIMEOUT 480000          // 8 min idle → off
-#define RGB_DISABLE_WHEN_USB_SUSPENDED
+#define RGB_MATRIX_SLEEP
 #define RGB_MATRIX_DEFAULT_MODE RGB_MATRIX_SOLID_REACTIVE_SIMPLE
 #define RGB_MATRIX_DEFAULT_HUE  10         // salmon-ish
 #define RGB_MATRIX_DEFAULT_SAT  200

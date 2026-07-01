@@ -1,12 +1,32 @@
 # GMMK Pro — QMK (macOS / Linux)
 
-Personal QMK firmware and documentation for my Glorious **GMMK Pro** (75% ANSI),
-tuned for **macOS (primary)** and **Fedora/GNOME Linux (secondary)** — writing,
-browsing, terminal, programming, and Claude Code.
+Personal QMK firmware **and** knowledgebase for a Glorious **GMMK Pro** (75% ANSI, white),
+tuned for **macOS (primary)** and **Fedora/GNOME Linux (secondary)** — writing, browsing,
+terminal, programming, and Claude Code. No Windows. This repo is the single source of truth
+for the keyboard.
 
-- **Design SSOT:** [`docs/DESIGN.md`](docs/DESIGN.md) — the full, approved design.
-- **RGB visualizer:** open [`docs/rgb-preview.html`](docs/rgb-preview.html) in a browser.
-- **Original firmware (recovered):** preserved under [`reference/`](reference/) for provenance — not reused.
+## Map
 
-Firmware source (`firmware/gati/`), the build/flash script, and setup steps are
-added as the build is implemented. See the design doc for the plan.
+| Read this for…                                          | File                                             |
+| ------------------------------------------------------- | ------------------------------------------------ |
+| Project brief, conventions, quickstart (**start here**) | [`CLAUDE.md`](CLAUDE.md)                         |
+| Full design — keymap, knob, RGB, side-LEDs + rationale  | [`docs/DESIGN.md`](docs/DESIGN.md)               |
+| Hardware — parts, specs, mods, spare keycaps, purchases | [`docs/HARDWARE.md`](docs/HARDWARE.md)           |
+| Build plan — toolchain → firmware → flash, task by task | [`docs/PLAN.md`](docs/PLAN.md)                   |
+| macOS one-time settings                                 | [`docs/macos-setup.md`](docs/macos-setup.md)     |
+| RGB color explorer (open in a browser)                  | [`docs/rgb-preview.html`](docs/rgb-preview.html) |
+| Recovered original firmware (provenance, not reused)    | [`reference/`](reference/)                       |
+
+## Build & flash
+
+```bash
+./scripts/flash.sh compile     # build only
+./scripts/flash.sh flash       # build + flash (enter bootloader first)
+```
+
+One-time toolchain: `brew install qmk/qmk/qmk` then `qmk setup`.
+**Enter bootloader:** press **Fn+B**, or hold **Esc** while plugging in the cable.
+
+## Status
+
+Design ✅ · Plan ✅ · Repo ✅ · **Firmware build + flash: not yet started** (begin at `docs/PLAN.md` Task 1).

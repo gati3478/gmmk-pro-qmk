@@ -83,7 +83,7 @@ First flashable firmware: both layers complete, all standard keys + OS-action cu
 - Create: `firmware/gati/rules.mk`
 - Create: `firmware/gati/readme.md`
 - Create: `scripts/flash.sh`
-- Modify: `README.md` (add Build & Flash section)
+- Confirm: `README.md` (build & flash already documented — no edit expected)
 
 **Interfaces:**
 
@@ -154,7 +154,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case OS_SHOT_CLIP: tap_code16(LCTL(LGUI(LSFT(KC_4)))); return false; // Ctrl+Cmd+Shift+4
         case OS_SHOT_FILE: tap_code16(LGUI(LSFT(KC_4)));       return false; // Cmd+Shift+4
-        case OS_MCTL:      tap_code(KC_MCTL);                  return false;
+        case OS_MCTL:      tap_code16(LCTL(KC_UP));            return false; // macOS Mission Control = Ctrl+Up
         case OS_SPOT:      tap_code16(LGUI(KC_SPC));           return false;
         case OS_WORD_L:    tap_code16(LALT(KC_LEFT));          return false;
         case OS_WORD_R:    tap_code16(LALT(KC_RGHT));          return false;
@@ -205,30 +205,17 @@ Run:
 
 Expected: `[OK]` and `gmmk_pro_ansi_gati.bin` produced. If it errors on `LAYOUT` argument count, diff against `~/qmk_firmware/keyboards/gmmk/pro/ansi/keymaps/default/keymap.c` and align the row grouping (15/15/15/14/14/10).
 
-- [ ] **Step 7: Add the Build & Flash section to `README.md`**
+- [ ] **Step 7: Confirm the README build/flash section**
 
-Append:
-
-````markdown
-## Build & flash
-
-```bash
-./scripts/flash.sh compile     # build only
-./scripts/flash.sh flash       # build + flash (put board in bootloader first)
-```
-````
-
-**Enter bootloader:** press **Fn+B**, or hold **Esc** while plugging in the cable.
-Requires `brew install qmk/qmk/qmk` + `qmk setup` once (see docs/DESIGN.md §12).
-
-````
+`README.md` already documents build & flash and bootloader entry (written during the earlier docs pass) — no change needed. Just confirm it is still accurate after this task.
 
 - [ ] **Step 8: First real flash + hardware verification**
 
 Put the board in bootloader (hold Esc, replug — this is the first flash so Fn+B isn't on the board yet), then:
+
 ```bash
 ./scripts/flash.sh flash
-````
+```
 
 Hardware checklist (verify on Mac):
 
@@ -370,7 +357,7 @@ Replace the eight `OS_*` cases with OS-branched versions:
         case OS_SHOT_FILE:
             tap_code16(is_mac() ? LGUI(LSFT(KC_4)) : LSFT(KC_PSCR)); return false;
         case OS_MCTL:
-            if (is_mac()) tap_code(KC_MCTL); else tap_code(KC_LGUI); return false; // Linux: Super=overview
+            if (is_mac()) tap_code16(LCTL(KC_UP)); else tap_code(KC_LGUI); return false; // Mac ⌃↑ / Linux Super=overview
         case OS_SPOT:
             if (is_mac()) tap_code16(LGUI(KC_SPC)); else tap_code(KC_LGUI); return false; // Linux: Super=search
         case OS_WORD_L:
@@ -491,11 +478,12 @@ In `process_record_user`, add a case:
 
 ```c
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
-    if (!side_leds_on || rgb_matrix_get_suspend_state()) return false;
+    if (!side_leds_on) return false;   // on suspend/idle the framework stops rendering, so indicators don't run
 
     uint8_t r, g, b;
-    if (host_keyboard_led_state().caps_lock) {          // pulsing red
-        uint8_t p = sin8((uint8_t)(timer_read() >> 2));
+    if (host_keyboard_led_state().caps_lock) {          // pulsing red (triangle wave — no lib deps)
+        uint16_t t = timer_read() % 1000u;
+        uint8_t p = (t < 500u) ? (uint8_t)(t * 255u / 500u) : (uint8_t)((1000u - t) * 255u / 500u);
         r = p; g = 0; b = 0;
     } else if (get_highest_layer(layer_state) == _FN) { // knob-mode color
         if (knob_mode == KNOB_SCROLL) { r = 60;  g = 200; b = 200; } // teal
@@ -516,7 +504,7 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 - [ ] **Step 3: Compile (the test)**
 
 Run: `./scripts/flash.sh compile`
-Expected: `[OK]`. If `sin8` is undefined, add `#include "lib/lib8tion/lib8tion.h"` near the top of `keymap.c`. If no side LEDs light in Step 4, the board may not flag them `LED_FLAG_UNDERGLOW` — read `~/qmk_firmware/keyboards/gmmk/pro/ansi/ansi.c` `g_led_config`, identify the left/right edge LED indices, and replace the `HAS_FLAGS(...)` check with an explicit index list.
+Expected: `[OK]`. If no side LEDs light in Step 4, the board may not flag them `LED_FLAG_UNDERGLOW` — read `~/qmk_firmware/keyboards/gmmk/pro/ansi/ansi.c` `g_led_config`, identify the left/right edge LED indices, and replace the `HAS_FLAGS(...)` check with an explicit index list. If the side strips stay lit while idle/asleep, add a guard `if (!rgb_matrix_is_enabled()) return false;` at the top of the function.
 
 - [ ] **Step 4: Flash + verify**
 
@@ -536,72 +524,28 @@ git commit -m "firmware: functional side-LED state machine (caps/layer/knob-mode
 
 ---
 
-### Task 7: Docs — CLAUDE.md, README, macOS settings checklist
+### Task 7: Final docs verification + release
 
-Finalizes the repo as a self-contained SSOT anyone (including future-you) can rebuild from.
+`CLAUDE.md`, `README.md`, `docs/HARDWARE.md`, and `docs/macos-setup.md` were written during the pre-build docs pass and are already committed. This task only confirms they still match the firmware you actually built, flips the status to "done", and tags the result.
 
 **Files:**
 
-- Create: `CLAUDE.md`
-- Create: `docs/macos-setup.md`
-- Modify: `README.md` (link the settings checklist)
+- Modify: `CLAUDE.md` (Status), `README.md` (Status), `docs/DESIGN.md` (Status header)
 
-- [ ] **Step 1: Create `CLAUDE.md`**
+- [ ] **Step 1: Verify docs against the built firmware**
 
-```markdown
-# CLAUDE.md — GMMK Pro QMK
+Re-read `CLAUDE.md` "The keyboard at a glance", `docs/DESIGN.md` §5–§8, and `docs/macos-setup.md`. Confirm each described behavior matches what you verified on hardware across Tasks 2–6. If you changed any binding during the build, reflect it here. Fix any drift.
 
-Personal QMK firmware for a Glorious GMMK Pro (75% ANSI), macOS-primary / Fedora-secondary.
+- [ ] **Step 2: Flip the status lines to done**
 
-## Source of truth
+In `CLAUDE.md` (## Status), `README.md` (## Status), and `docs/DESIGN.md` (**Status:** header), change the "firmware not yet built / not yet started" wording to reflect that the firmware is now built, flashed, and verified.
 
-- Design: `docs/DESIGN.md` (authoritative — update it before changing behavior).
-- Firmware: `firmware/gati/{keymap.c,config.h,rules.mk}` — pure mainline QMK, 2 layers (`_BASE`,`_FN`).
-- Build/flash: `scripts/flash.sh` (symlinks `firmware/gati` into `~/qmk_firmware`).
-
-## Rules
-
-- Exactly two layers. Keep it that way.
-- **Keycodes must match keycap legends** — never map a key to something its cap doesn't say.
-- macOS primary, Fedora secondary, no Windows. OS-differing actions branch on `detected_host_os()`.
-- Enter bootloader to flash: **Fn+B** or hold **Esc** while plugging in.
-- After any behavior change: update `docs/DESIGN.md`, `./scripts/flash.sh compile`, flash, verify, commit.
-
-## Layout at a glance
-
-See `docs/DESIGN.md` §5–§8 for the full base/Fn maps, modal knob, and RGB/side-LED scheme.
-```
-
-- [ ] **Step 2: Create `docs/macos-setup.md`**
-
-```markdown
-# macOS one-time setup
-
-1. **Caps Lock switches input source** — System Settings ▸ Keyboard ▸ Keyboard Shortcuts ▸
-   (or the "Caps Lock key" row under Input Sources): set Caps Lock to switch to/from your
-   non-Latin source (Georgian). Now a Caps tap on the GMMK cycles input like on the laptop.
-2. **Dictation (Fn+F5)** — System Settings ▸ Keyboard ▸ Dictation ▸ Shortcut ▸ Customize,
-   then press **⌃⌥⌘D** (Ctrl+Option+Cmd+D) so it matches `MAC_DICT`.
-3. **Do Not Disturb (Fn+F6)** — create a Shortcuts.app shortcut that toggles a Focus, then
-   assign it the hotkey **⌃⌥⌘N** (Ctrl+Option+Cmd+N) to match `MAC_DND`.
-4. **Function keys** — external keyboards send real F-keys by default (what we want); no change needed.
-```
-
-- [ ] **Step 3: Link the checklist from `README.md`**
-
-Append to README:
-
-```markdown
-## macOS settings
-
-One-time setup (Caps→input-switch, Dictation, DND): see [`docs/macos-setup.md`](docs/macos-setup.md).
-```
-
-- [ ] **Step 4: Commit**
+- [ ] **Step 3: Commit and tag**
 
 ```bash
-git add CLAUDE.md docs/macos-setup.md README.md
-git commit -m "docs: CLAUDE.md, macOS setup checklist, README links"
+git add CLAUDE.md README.md docs/DESIGN.md
+git commit -m "docs: mark firmware built + verified"
+git tag -a v1.0 -m "First working build: 2-layer keymap, modal knob, reactive-salmon RGB, side-LED indicators"
 ```
 
 ---
