@@ -2,5 +2,9 @@
 # Bump deliberately, then: ./scripts/flash.sh setup && ./scripts/flash.sh compile, re-verify on hardware.
 QMK_TAG=0.33.8
 QMK_SHA=b1093e9da5f27253f3db692352daf5cf4ad5b98d
-# Toolchain provenance (CI pins these via the qmk_cli container image):
-#   qmk CLI 1.1.8 · arm-none-eabi-gcc 9.2.1
+# ARM toolchain — pinned to match CI (same qmk_toolchains commit as the qmk_cli container):
+#   qmk_toolchains v15.2.0-1 · arm-none-eabi-gcc 15.2.0 · commit a55a2b0
+# Local install (macOS/Apple Silicon): extract the host_macosARM64 asset into
+#   ~/Library/Application Support/qmk  (the qmk CLI auto-prepends its bin/ to PATH).
+# Local (macOS) & CI (Linux) builds are byte-identical except one inert newlib assert
+# path string (host_macosARM64 vs host_linuxX64) — see docs/DESIGN.md §12. qmk CLI 1.1.8.
