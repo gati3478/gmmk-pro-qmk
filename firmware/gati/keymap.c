@@ -113,8 +113,9 @@ void keyboard_post_init_user(void) {
 }
 
 // Side diffuser strips = a functional readout, repainted every frame (never latched).
-// Priority: Caps Lock > FN (knob-mode color) > base. When the matrix is suspended/idle/off
-// the framework skips indicators entirely, so the strips go dark without any guard here.
+// Priority: Caps Lock (red) > FN (sage scroll / amber undo) > base (off). Strips stay dark at
+// rest and while typing (per-key salmon reactive is a separate LED set, untouched here). When
+// the matrix is suspended/idle/off the framework skips indicators entirely, no guard needed.
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     if (!side_leds_on) return false;   // Fn+9 (SIDE_TOGG) turns the strips off
 
@@ -124,10 +125,10 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
         uint8_t p = (t < 500u) ? (uint8_t)(t * 255u / 500u) : (uint8_t)((1000u - t) * 255u / 500u);
         r = p; g = 0; b = 0;
     } else if (get_highest_layer(layer_state) == _FN) { // knob-mode color
-        if (knob_mode == KNOB_SCROLL) { r = 60;  g = 200; b = 200; } // teal
-        else                          { r = 255; g = 170; b = 40;  } // amber
-    } else {                                            // base
-        r = 255; g = 120; b = 90;                        // salmon
+        if (knob_mode == KNOB_SCROLL) { r = 100; g = 190; b = 110; } // sage (scroll)
+        else                          { r = 255; g = 170; b = 40;  } // amber (undo)
+    } else {                                            // base: strips off (readout only for Fn/Caps)
+        r = 0; g = 0; b = 0;                             // per-key salmon reactive is a separate LED set, untouched
     }
 
     for (uint8_t i = led_min; i < led_max; i++) {

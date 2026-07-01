@@ -170,15 +170,15 @@ Hold Caps or Fn. Unlisted keys are transparent.
 
 Driven in `rgb_matrix_indicators_advanced_user`, overriding the GMMK Pro edge-LED indices each frame (never latched — this is the structural fix for the old "caps stuck lit" bug). Priority high → low:
 
-| State                                     | Both side strips                        |
-| ----------------------------------------- | --------------------------------------- |
-| USB suspended / idle-timed-out            | Off                                     |
-| **Caps Lock ON** (real)                   | **Pulsing red** `RGB(255,30,30)` (sine) |
-| **FN layer active** — knob mode Scroll    | **Teal** `RGB(60,200,200)`              |
-| **FN layer active** — knob mode Undo/Redo | **Amber** `RGB(255,170,40)`             |
-| Base                                      | **Salmon** `RGB(255,120,90)`            |
+| State                                     | Both side strips                                                                                       |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| USB suspended / idle-timed-out            | Off                                                                                                    |
+| **Caps Lock ON** (real)                   | **Pulsing red** `RGB(255,30,30)` (triangle)                                                            |
+| **FN layer active** — knob mode Scroll    | **Sage** `RGB(100,190,110)`                                                                            |
+| **FN layer active** — knob mode Undo/Redo | **Amber** `RGB(255,170,40)`                                                                            |
+| Base                                      | **Off** — the strips are a pure Fn/Caps readout; per-key salmon reactive (keylight LEDs) is unaffected |
 
-One indicator, three facts: which layer you're on, which knob mode is live, and the caps safety net. Colors are trivially tunable in source.
+Dark at rest — the strips stay off during normal typing (the per-key salmon ripple carries that). When lit they carry three facts: that you're on the Fn layer, which knob mode is live, and the caps-lock safety net. Colors are trivially tunable in source.
 
 ---
 
