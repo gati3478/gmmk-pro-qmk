@@ -19,6 +19,7 @@ enum custom_keycodes {
 
 enum knob_modes { KNOB_SCROLL, KNOB_UNDO };
 static uint8_t knob_mode = KNOB_SCROLL;
+static bool side_leds_on = true;
 
 static bool is_mac(void) {
     return detected_host_os() != OS_LINUX; // default to macOS when unsure
@@ -77,7 +78,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case KNOB_MODE:
             knob_mode = (knob_mode == KNOB_SCROLL) ? KNOB_UNDO : KNOB_SCROLL;
             return false;
-        // SIDE_TOGG -> Task 6
+        case SIDE_TOGG:
+            side_leds_on = !side_leds_on;
+            return false;
     }
     return true;
 }
@@ -107,4 +110,30 @@ void keyboard_post_init_user(void) {
         gati_config.version = GATI_EECONFIG_VERSION;
         eeconfig_update_user(gati_config.raw);
     }
+}
+
+// Side diffuser strips = a functional readout, repainted every frame (never latched).
+// Priority: Caps Lock > FN (knob-mode color) > base. When the matrix is suspended/idle/off
+// the framework skips indicators entirely, so the strips go dark without any guard here.
+bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+    if (!side_leds_on) return false;   // Fn+9 (SIDE_TOGG) turns the strips off
+
+    uint8_t r, g, b;
+    if (host_keyboard_led_state().caps_lock) {          // pulsing red (triangle wave, no lib deps)
+        uint16_t t = timer_read() % 1000u;
+        uint8_t p = (t < 500u) ? (uint8_t)(t * 255u / 500u) : (uint8_t)((1000u - t) * 255u / 500u);
+        r = p; g = 0; b = 0;
+    } else if (get_highest_layer(layer_state) == _FN) { // knob-mode color
+        if (knob_mode == KNOB_SCROLL) { r = 60;  g = 200; b = 200; } // teal
+        else                          { r = 255; g = 170; b = 40;  } // amber
+    } else {                                            // base
+        r = 255; g = 120; b = 90;                        // salmon
+    }
+
+    for (uint8_t i = led_min; i < led_max; i++) {
+        if (HAS_FLAGS(g_led_config.flags[i], LED_FLAG_UNDERGLOW)) {
+            rgb_matrix_set_color(i, r, g, b);
+        }
+    }
+    return false;
 }
