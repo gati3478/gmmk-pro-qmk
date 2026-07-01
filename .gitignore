@@ -3,6 +3,7 @@
 
 # Session tooling state (not part of the keyboard project)
 .remember/
+.superpowers/
 
 # QMK build artifacts (generated locally, never committed)
 .build/
