@@ -10,9 +10,9 @@ QMK_KM="$HOME/qmk_firmware/keyboards/gmmk/pro/rev1/ansi/keymaps/gati"
 mkdir -p "$(dirname "$QMK_KM")"
 ln -sfn "$REPO/firmware/gati" "$QMK_KM"   # repo stays the source of truth
 
-# On macOS, dfu-util reliably wedges on the post-write `:leave` USB reset: the board
-# detaches + reboots into the new firmware, but dfu-util never gets its detach ack and
-# blocks forever (this once cost us a 57-minute zombie flash). The write is already
+# On macOS, dfu-util intermittently wedges on the post-write `:leave` USB reset: the board
+# detaches + reboots into the new firmware, but sometimes never gets its detach ack and
+# blocks forever (once cost us a 57-minute zombie flash; other flashes exit cleanly). The write is already
 # complete by then. So stream the flash and, once dfu-util prints its success line, give
 # it a short grace period to exit on its own — if it's still stuck, kill it. Killing
 # after that marker is safe: the image is written+verified and the board has rebooted.

@@ -112,9 +112,10 @@ Backed up to **`github.com/gati3478/gmmk-pro-qmk`** (private; `origin` is SSH �
   `KC_MS_WH_*`→`MS_WH*`. Before adding RGB / mouse / media keys, grep `~/qmk_firmware/quantum/keycodes.h`.
 - **Board target is `gmmk/pro/rev1/ansi`** (`gmmk/pro/ansi` is an alias that resolves to it). The STM32
   ROM DFU bootloader is unerasable — the on-PCB reset button always re-enters DFU, so you can't brick it.
-- **`dfu-util` wedges on `:leave` (macOS).** After a successful write, dfu-util issues the DFU_DETACH
-  reset; the board reboots into the new firmware but dfu-util never gets its ack and blocks forever (once
-  cost a 57-min zombie flash). The write is already done — the board is fine. `scripts/flash.sh` handles
+- **`dfu-util` intermittently wedges on `:leave` (macOS).** After a successful write, dfu-util issues the
+  DFU_DETACH reset; the board reboots into the new firmware but dfu-util **sometimes** never gets its ack and
+  blocks forever (once cost a 57-min zombie flash; other flashes exit cleanly). The write is already done — the
+  board is fine. `scripts/flash.sh` handles
   this: it watches for dfu-util's `File downloaded successfully` line, then kills a still-wedged dfu-util
   after `FLASH_LEAVE_GRACE` (default 10s) and reports success. A blanket `timeout` can't be used — the
   pre-write "waiting for bootloader" phase is legitimately open-ended; only that marker separates the phases.
