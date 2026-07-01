@@ -125,7 +125,7 @@ Hold Caps or Fn. Unlisted keys are transparent.
 
 ### 6.2 Fn number row — RGB controls (set once, forget)
 
-`` Fn+` `` = `RGB_TOG` · 1 `RGB_MOD` · 2 `RGB_RMOD` · 3 `RGB_HUI` · 4 `RGB_SAI` · 5 `RGB_VAI` · 6 `RGB_VAD` · 7 `RGB_SPI` · 8 `RGB_SPD` · 9 = side-LED toggle (custom).
+`` Fn+` `` = `RM_TOGG` · 1 `RM_NEXT` · 2 `RM_PREV` · 3 `RM_HUEU` · 4 `RM_SATU` · 5 `RM_VALU` · 6 `RM_VALD` · 7 `RM_SPDU` · 8 `RM_SPDD` · 9 = side-LED toggle (custom). (RGB-**matrix** keycodes; mainline QMK renamed the old `RGB_*` lighting keycodes to `RM_*`.)
 
 ### 6.3 Fn — navigation & system
 
