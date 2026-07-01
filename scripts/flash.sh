@@ -83,8 +83,10 @@ cmd_setup() {
     git clone --branch "$QMK_TAG" --recurse-submodules \
       https://github.com/qmk/qmk_firmware "$QMK_HOME"
   else
-    if [ -n "$(git -C "$QMK_HOME" status --porcelain)" ]; then
-      echo ">> flash.sh: $QMK_HOME has local changes — refusing to touch it. Resolve them, then rerun setup." >&2
+    # Only tracked-file modifications count as "dirty": flash.sh itself plants an untracked
+    # keymap symlink under keyboards/, which must never block a re-sync to the pinned rev.
+    if ! git -C "$QMK_HOME" diff --quiet || ! git -C "$QMK_HOME" diff --cached --quiet; then
+      echo ">> flash.sh: $QMK_HOME has uncommitted changes to tracked files — refusing to touch it. Resolve them, then rerun setup." >&2
       exit 1
     fi
     git -C "$QMK_HOME" fetch --tags origin
@@ -145,7 +147,7 @@ case "${1:-help}" in
   flash)   pin_check; link_keymap; flash_gmmk ;;
   setup)   cmd_setup ;;
   doctor)  qmk doctor ;;
-  lint)    link_keymap; qmk lint -kb "$KB" -km "$KM" ;;
+  lint)    pin_check; link_keymap; qmk lint -kb "$KB" -km "$KM" ;;
   format)  cmd_format "${2:-}" ;;
   size)    pin_check; link_keymap; cmd_size ;;
   help|-h|--help) usage 0 ;;
