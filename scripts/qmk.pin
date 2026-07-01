@@ -6,5 +6,5 @@ QMK_SHA=b1093e9da5f27253f3db692352daf5cf4ad5b98d
 #   qmk_toolchains v15.2.0-1 · arm-none-eabi-gcc 15.2.0 · commit a55a2b0
 # Local install (macOS/Apple Silicon): extract the host_macosARM64 asset into
 #   ~/Library/Application Support/qmk  (the qmk CLI auto-prepends its bin/ to PATH).
-# Local (macOS) & CI (Linux) builds are byte-identical except one inert newlib assert
-# path string (host_macosARM64 vs host_linuxX64) — see docs/DESIGN.md §12. qmk CLI 1.1.8.
+# Local (macOS) & CI (Linux) builds are functionally identical but NOT bit-for-bit: one inert newlib
+# assert path string (host_macosARM64 vs host_linuxX64) shifts the image — see docs/DESIGN.md §12. qmk CLI 1.1.8.

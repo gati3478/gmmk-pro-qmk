@@ -128,7 +128,9 @@ cmd_format() {
 }
 
 usage() {
-  cat >&2 <<'EOF'
+  local code="${1:-1}" fd=2
+  [ "$code" -eq 0 ] && fd=1   # explicit `help` → stdout; error-triggered usage → stderr
+  cat >&"$fd" <<'EOF'
 usage: flash.sh <command>
 
   compile            build the firmware (warns on QMK pin drift)
@@ -139,7 +141,7 @@ usage: flash.sh <command>
   format [--check]   clang-format firmware/gati C sources (--check = dry run, no writes)
   size               build + report firmware size vs the 256 KB flash budget
 EOF
-  exit "${1:-1}"
+  exit "$code"
 }
 
 case "${1:-help}" in
