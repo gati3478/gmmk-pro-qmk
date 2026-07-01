@@ -1,0 +1,1018 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GMMK Pro — RGB Preview (Gati)</title>
+    <style>
+      :root {
+        --bg: #0c0c0f;
+        --panel: #16161b;
+        --panel2: #1e1e25;
+        --line: #2a2a33;
+        --ink: #e7e7ee;
+        --ink-dim: #9a9aa8;
+        --accent: #ff9d5c;
+        --case: #c7ccd2;
+        --case2: #9aa0a8;
+        --u: 54px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        background: radial-gradient(
+          1200px 700px at 70% -10%,
+          #1a1a22,
+          #0c0c0f 60%
+        );
+        color: var(--ink);
+        font:
+          14px/1.5 -apple-system,
+          BlinkMacSystemFont,
+          "SF Pro Text",
+          "Segoe UI",
+          sans-serif;
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 28px 24px 60px;
+      }
+      h1 {
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        margin: 0 0 2px;
+      }
+      .sub {
+        color: var(--ink-dim);
+        font-size: 13px;
+        margin-bottom: 22px;
+      }
+      .stage {
+        display: flex;
+        justify-content: center;
+        padding: 34px 10px 26px;
+        background: linear-gradient(180deg, #0e0e12, #08080b);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        position: relative;
+        overflow: hidden;
+      }
+      .stage::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          600px 300px at 50% 120%,
+          rgba(255, 157, 92, 0.05),
+          transparent 70%
+        );
+        pointer-events: none;
+      }
+
+      /* keyboard case */
+      .kb {
+        position: relative;
+        padding: 16px;
+        border-radius: 16px;
+        background: linear-gradient(180deg, var(--case), var(--case2));
+        box-shadow:
+          0 24px 60px rgba(0, 0, 0, 0.55),
+          0 2px 0 rgba(255, 255, 255, 0.35) inset,
+          0 -3px 8px rgba(0, 0, 0, 0.25) inset;
+      }
+      .main {
+        position: relative;
+        width: calc(var(--u) * 16 + 12px);
+      }
+      .row {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 6px;
+      }
+      .navcol {
+        position: absolute;
+        top: 16px;
+        left: calc(16px + var(--u) * 15.15);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .navcol .krow {
+        display: flex;
+        gap: 6px;
+      }
+
+      /* side glow diffusers */
+      .side {
+        position: absolute;
+        top: 14px;
+        bottom: 14px;
+        width: 9px;
+        border-radius: 6px;
+        filter: blur(0.5px);
+        transition:
+          background 0.5s,
+          box-shadow 0.5s,
+          opacity 0.5s;
+      }
+      .side.l {
+        left: 4px;
+      }
+      .side.r {
+        right: 4px;
+      }
+
+      /* keys */
+      .key {
+        position: relative;
+        height: var(--u);
+        border-radius: 7px;
+        flex: 0 0 auto;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        background: linear-gradient(180deg, #efeadd, #e4dfd0);
+        box-shadow:
+          0 2px 0 #b9b3a2,
+          0 3px 4px rgba(0, 0, 0, 0.28),
+          0 1px 0 rgba(255, 255, 255, 0.7) inset;
+        overflow: visible;
+      }
+      .key .cap {
+        position: absolute;
+        inset: 3px;
+        border-radius: 5px;
+        background: inherit;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .key .lg {
+        z-index: 3;
+        font-size: 10px;
+        color: #4a4640;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        text-align: center;
+        padding: 0 3px;
+        line-height: 1.05;
+        pointer-events: none;
+        user-select: none;
+      }
+      .key.alpha {
+        background: linear-gradient(180deg, #efeadd, #e3ddcd);
+      }
+      .key.mod {
+        background: linear-gradient(180deg, #dcd7c7, #cfc9b6);
+      }
+      .key.mod .lg {
+        color: #5a554c;
+      }
+      .key.accent {
+        background: linear-gradient(180deg, #f0b7a6, #e79f8b);
+      }
+      .key.accent .lg {
+        color: #6b3a2e;
+      }
+      .key.sage {
+        background: linear-gradient(180deg, #b9cbb0, #a6bb9b);
+      }
+      .key.sage .lg {
+        color: #3f4a38;
+      }
+      /* south-facing per-key glow (leaks around/under the PBT cap, NOT through it) */
+      .key .glow {
+        position: absolute;
+        left: -3px;
+        right: -3px;
+        bottom: -7px;
+        height: 26px;
+        border-radius: 9px;
+        z-index: 1;
+        background: radial-gradient(
+          60% 130% at 50% 100%,
+          var(--g, transparent),
+          transparent 72%
+        );
+        opacity: var(--gi, 0);
+        filter: blur(3px);
+        transition:
+          opacity 0.12s,
+          background 0.12s;
+        pointer-events: none;
+      }
+      .key.knob {
+        width: var(--u);
+        height: var(--u);
+        border-radius: 50%;
+        background: radial-gradient(
+          circle at 38% 32%,
+          #f4d98a,
+          #caa23e 70%,
+          #8f6f26
+        );
+        box-shadow:
+          0 3px 8px rgba(0, 0, 0, 0.4),
+          0 1px 0 rgba(255, 255, 255, 0.5) inset;
+      }
+      .key.knob .cap {
+        display: none;
+      }
+      .key.fnlit .cap {
+        outline: 2px solid rgba(120, 150, 255, 0.9);
+        outline-offset: -3px;
+      }
+
+      @keyframes breathe {
+        0%,
+        100% {
+          opacity: 0.12;
+        }
+        50% {
+          opacity: 0.9;
+        }
+      }
+      .breathing .key .glow {
+        animation: breathe 3.4s ease-in-out infinite;
+      }
+
+      /* controls */
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 20px;
+        margin-top: 22px;
+      }
+      @media (max-width: 920px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 16px 16px 18px;
+      }
+      .card h3 {
+        margin: 0 0 12px;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--ink-dim);
+        font-weight: 600;
+      }
+      .seg {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .seg button {
+        all: unset;
+        cursor: pointer;
+        padding: 8px 12px;
+        border-radius: 9px;
+        background: var(--panel2);
+        border: 1px solid var(--line);
+        color: var(--ink-dim);
+        font-size: 12.5px;
+        font-weight: 500;
+        transition: 0.15s;
+      }
+      .seg button:hover {
+        color: var(--ink);
+        border-color: #3a3a46;
+      }
+      .seg button.on {
+        background: var(--accent);
+        color: #20140a;
+        border-color: var(--accent);
+        font-weight: 600;
+      }
+      .sw {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .sw button {
+        all: unset;
+        cursor: pointer;
+        width: auto;
+        padding: 9px 11px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: var(--panel2);
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        transition: 0.15s;
+      }
+      .sw button.on {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 1px var(--accent);
+      }
+      .dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 5px;
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12) inset;
+      }
+      .sw .nm {
+        font-size: 12.5px;
+        color: var(--ink);
+      }
+      .row2 {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 14px;
+      }
+      input[type="range"] {
+        width: 100%;
+        accent-color: var(--accent);
+      }
+      .toggles {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .tg {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 13px;
+      }
+      .switch {
+        position: relative;
+        width: 42px;
+        height: 24px;
+        background: var(--panel2);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .switch.on {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+      .switch i {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #e9e9ef;
+        transition: 0.2s;
+      }
+      .switch.on i {
+        left: 20px;
+        background: #20140a;
+      }
+      .note {
+        font-size: 12.5px;
+        color: var(--ink-dim);
+        line-height: 1.55;
+      }
+      .note b {
+        color: var(--ink);
+      }
+      .rec {
+        margin-top: 14px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .rec button {
+        all: unset;
+        cursor: pointer;
+        padding: 9px 14px;
+        border-radius: 10px;
+        font-size: 12.5px;
+        font-weight: 600;
+      }
+      .rec .primary {
+        background: var(--accent);
+        color: #20140a;
+      }
+      .rec .ghost {
+        border: 1px solid var(--line);
+        color: var(--ink);
+      }
+      .hint {
+        text-align: center;
+        color: var(--ink-dim);
+        font-size: 12px;
+        margin-top: 14px;
+      }
+      .pill {
+        display: inline-block;
+        background: var(--panel2);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 11.5px;
+        color: var(--ink-dim);
+      }
+      code {
+        background: #000;
+        padding: 1px 5px;
+        border-radius: 4px;
+        color: #ffcba3;
+        font-size: 11.5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>GMMK Pro — RGB / Side-Glow Preview</h1>
+      <div class="sub">
+        Your 75% ANSI, rendered in true color. Flip the controls,
+        <b>type on your Mac keyboard</b> or click keys to feel the reactive
+        effects, then tell me your picks.
+      </div>
+
+      <div class="stage">
+        <div class="kb" id="kb">
+          <div class="side l" id="sideL"></div>
+          <div class="side r" id="sideR"></div>
+          <div class="main" id="main"></div>
+          <div class="navcol" id="navcol"></div>
+        </div>
+      </div>
+      <div class="hint">
+        Reactive effects respond to real typing &nbsp;·&nbsp; PBT legends never
+        light up — the color you see is <b>edge/underglow</b> + the
+        <b>side diffusers</b>, which is exactly how it looks in life.
+      </div>
+
+      <div class="grid">
+        <div>
+          <div class="card">
+            <h3>Per-key effect</h3>
+            <div class="seg" id="fx">
+              <button data-fx="heatmap">Reactive Heatmap</button>
+              <button data-fx="reactive">Reactive Splash</button>
+              <button data-fx="solid">Solid</button>
+              <button data-fx="breathing">Breathing</button>
+              <button data-fx="gradient">Static Gradient</button>
+              <button data-fx="off">Off (caps only)</button>
+            </div>
+            <div class="row2">
+              <span class="pill">Brightness</span>
+              <input type="range" id="bri" min="0" max="100" value="72" />
+              <span
+                id="briv"
+                style="width: 34px; text-align: right; color: var(--ink-dim)"
+                >72</span
+              >
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 16px">
+            <h3>Palette (tuned to your keycaps)</h3>
+            <div class="sw" id="pal"></div>
+          </div>
+
+          <div class="card" style="margin-top: 16px">
+            <h3>
+              Side-glow behavior
+              <span
+                style="
+                  text-transform: none;
+                  color: var(--ink-dim);
+                  font-weight: 400;
+                "
+                >— the dominant visual on a PBT board</span
+              >
+            </h3>
+            <div class="seg" id="side">
+              <button data-side="accent">Static accent</button>
+              <button data-side="layer">Layer indicator</button>
+              <button data-side="breatheStatic">Slow breathe</button>
+              <button data-side="off">Off</button>
+            </div>
+            <div class="toggles" style="margin-top: 16px">
+              <div class="tg">
+                <span
+                  >Simulate <b>FN held</b> (see layer indicator + FN keys)</span
+                >
+                <div class="switch" id="tgFn"><i></i></div>
+              </div>
+              <div class="tg">
+                <span>Idle / sleep dim (Mac asleep → LEDs off)</span>
+                <div class="switch" id="tgIdle"><i></i></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <h3>My recommendation</h3>
+            <div class="note">
+              Your caps are <b>PBT, non-shine-through</b>, and the LEDs are
+              <b>south-facing</b> — so per-key effects read as a soft
+              <b>underglow halo</b>, never lit legends. That means: <br /><br />
+              1. A busy per-key animation is mostly wasted; a calm
+              <b>Reactive Heatmap</b> gives a warm bloom as you type (your old
+              vibe) without noise.
+              <br />
+              2. The <b>side diffusers</b> are what people actually see — so
+              give them a <b>job</b>: a static accent that shifts color when
+              <b>FN is held</b> = instant visual confirmation you're on the Fn
+              layer.
+              <br />
+              3. The old <b>caps-lock stuck-on bug</b> is gone by design — the
+              new firmware drives indicators from live layer/lock state each
+              frame instead of latching on a keypress.
+            </div>
+            <div class="rec">
+              <button class="primary" id="applyRec">
+                Apply my recommendation
+              </button>
+              <button class="ghost" id="applyMin">Minimal / calm</button>
+            </div>
+          </div>
+          <div class="card" style="margin-top: 16px">
+            <h3>Your current selection</h3>
+            <div class="note" id="summary"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const U = 54;
+      // [label, code, width, class]
+      const MAIN = [
+        [
+          ["Esc", "Escape", 1, "accent"],
+          ["F1", "F1", 1, "mod"],
+          ["F2", "F2", 1, "mod"],
+          ["F3", "F3", 1, "mod"],
+          ["F4", "F4", 1, "mod"],
+          ["F5", "F5", 1, "mod"],
+          ["F6", "F6", 1, "mod"],
+          ["F7", "F7", 1, "mod"],
+          ["F8", "F8", 1, "mod"],
+          ["F9", "F9", 1, "mod"],
+          ["F10", "F10", 1, "mod"],
+          ["F11", "F11", 1, "mod"],
+          ["F12", "F12", 1, "mod"],
+          ["⎙", "PrintScreen", 1, "mod"],
+        ],
+        [
+          ["`", "Backquote", 1, "mod"],
+          ["1", "Digit1", 1, "alpha"],
+          ["2", "Digit2", 1, "alpha"],
+          ["3", "Digit3", 1, "alpha"],
+          ["4", "Digit4", 1, "alpha"],
+          ["5", "Digit5", 1, "alpha"],
+          ["6", "Digit6", 1, "alpha"],
+          ["7", "Digit7", 1, "alpha"],
+          ["8", "Digit8", 1, "alpha"],
+          ["9", "Digit9", 1, "alpha"],
+          ["0", "Digit0", 1, "alpha"],
+          ["-", "Minus", 1, "alpha"],
+          ["=", "Equal", 1, "alpha"],
+          ["Bksp", "Backspace", 2, "mod"],
+        ],
+        [
+          ["Tab", "Tab", 1.5, "mod"],
+          ["Q", "KeyQ", 1, "alpha"],
+          ["W", "KeyW", 1, "alpha"],
+          ["E", "KeyE", 1, "alpha"],
+          ["R", "KeyR", 1, "alpha"],
+          ["T", "KeyT", 1, "alpha"],
+          ["Y", "KeyY", 1, "alpha"],
+          ["U", "KeyU", 1, "alpha"],
+          ["I", "KeyI", 1, "alpha"],
+          ["O", "KeyO", 1, "alpha"],
+          ["P", "KeyP", 1, "alpha"],
+          ["[", "BracketLeft", 1, "alpha"],
+          ["]", "BracketRight", 1, "alpha"],
+          ["\\", "Backslash", 1.5, "mod"],
+        ],
+        [
+          ["⇪/FN", "CapsLock", 1.75, "mod"],
+          ["A", "KeyA", 1, "alpha"],
+          ["S", "KeyS", 1, "alpha"],
+          ["D", "KeyD", 1, "alpha"],
+          ["F", "KeyF", 1, "alpha"],
+          ["G", "KeyG", 1, "alpha"],
+          ["H", "KeyH", 1, "alpha"],
+          ["J", "KeyJ", 1, "alpha"],
+          ["K", "KeyK", 1, "alpha"],
+          ["L", "KeyL", 1, "alpha"],
+          [";", "Semicolon", 1, "alpha"],
+          ["'", "Quote", 1, "alpha"],
+          ["Enter", "Enter", 2.25, "accent"],
+        ],
+        [
+          ["Shift", "ShiftLeft", 2.25, "mod"],
+          ["Z", "KeyZ", 1, "alpha"],
+          ["X", "KeyX", 1, "alpha"],
+          ["C", "KeyC", 1, "alpha"],
+          ["V", "KeyV", 1, "alpha"],
+          ["B", "KeyB", 1, "alpha"],
+          ["N", "KeyN", 1, "alpha"],
+          ["M", "KeyM", 1, "alpha"],
+          [",", "Comma", 1, "alpha"],
+          [".", "Period", 1, "alpha"],
+          ["/", "Slash", 1, "alpha"],
+          ["Shift", "ShiftRight", 1.75, "mod"],
+          ["↑", "ArrowUp", 1, "mod"],
+        ],
+        [
+          ["Ctrl", "ControlLeft", 1.25, "mod"],
+          ["Cmd", "MetaLeft", 1.25, "mod"],
+          ["Opt", "AltLeft", 1.25, "mod"],
+          ["", "Space", 6.25, "sage"],
+          ["Opt", "AltRight", 1, "mod"],
+          ["Fn", "Fn", 1, "mod"],
+          ["Ctrl", "ControlRight", 1, "mod"],
+          ["←", "ArrowLeft", 1, "mod"],
+          ["↓", "ArrowDown", 1, "mod"],
+          ["→", "ArrowRight", 1, "mod"],
+        ],
+      ];
+      const NAV = [
+        // rendered as separate column: knob + Del/End/PgUp/PgDn
+        [["⟳", "Knob", 1, "knob"]],
+        [["Del", "KDel", 1, "mod"]],
+        [["End", "KEnd", 1, "mod"]],
+        [["PgUp", "KPgUp", 1, "mod"]],
+        [["PgDn", "KPgDn", 1, "mod"]],
+      ];
+      // keys that light on the FN layer (for the layer-indicator demo)
+      const FN_KEYS = new Set([
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5",
+        "F6",
+        "F7",
+        "F8",
+        "F9",
+        "F10",
+        "F11",
+        "F12",
+        "Backquote",
+        "Digit1",
+        "Digit2",
+        "Digit3",
+        "Digit4",
+        "Digit5",
+        "Digit6",
+        "Digit7",
+        "Digit8",
+        "Digit9",
+        "KeyB",
+        "KeyN",
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowUp",
+        "ArrowDown",
+        "KEnd",
+        "KPgUp",
+        "KPgDn",
+        "PrintScreen",
+      ]);
+
+      const PALETTES = {
+        warm: {
+          name: "Warm 9009",
+          key: [255, 150, 70],
+          hot: [255, 110, 40],
+          side: [255, 160, 90],
+          fn: [120, 150, 255],
+        },
+        sage: {
+          name: "Sage Glow",
+          key: [150, 200, 150],
+          hot: [255, 205, 120],
+          side: [130, 190, 130],
+          fn: [255, 150, 110],
+        },
+        salmon: {
+          name: "Salmon Pop",
+          key: [70, 40, 50],
+          hot: [255, 110, 95],
+          side: [255, 140, 120],
+          fn: [150, 200, 150],
+        },
+        cool: {
+          name: "Cool White",
+          key: [190, 215, 255],
+          hot: [235, 245, 255],
+          side: [210, 225, 255],
+          fn: [255, 180, 120],
+        },
+        mono: {
+          name: "Amber Mono",
+          key: [255, 176, 60],
+          hot: [255, 210, 120],
+          side: [255, 176, 60],
+          fn: [120, 150, 255],
+        },
+      };
+
+      let state = {
+        fx: "heatmap",
+        pal: "warm",
+        side: "layer",
+        bri: 72,
+        fn: false,
+        idle: false,
+      };
+      const keyEls = {};
+      const heat = {};
+
+      function mk(label, code, w, cls) {
+        const k = document.createElement("div");
+        k.className = "key " + cls;
+        k.style.width = w * U - 6 + "px";
+        k.dataset.code = code;
+        if (cls !== "knob") {
+          k.innerHTML =
+            '<div class="glow"></div><div class="cap"><span class="lg">' +
+            label +
+            "</span></div>";
+        } else {
+          k.innerHTML = '<div class="glow"></div>';
+        }
+        keyEls[code] = k;
+        heat[code] = 0;
+        k.addEventListener("mousedown", () => press(code));
+        return k;
+      }
+      function build() {
+        const main = document.getElementById("main");
+        MAIN.forEach((r) => {
+          const row = document.createElement("div");
+          row.className = "row";
+          r.forEach(([l, c, w, cl]) => row.appendChild(mk(l, c, w, cl)));
+          main.appendChild(row);
+        });
+        const nav = document.getElementById("navcol");
+        NAV.forEach((r) => {
+          const row = document.createElement("div");
+          row.className = "krow";
+          r.forEach(([l, c, w, cl]) => row.appendChild(mk(l, c, w, cl)));
+          nav.appendChild(row);
+        });
+      }
+      function rgb(a) {
+        return "rgb(" + a[0] + "," + a[1] + "," + a[2] + ")";
+      }
+      function mix(a, b, t) {
+        return [
+          a[0] + (b[0] - a[0]) * t,
+          a[1] + (b[1] - a[1]) * t,
+          a[2] + (b[2] - a[2]) * t,
+        ].map(Math.round);
+      }
+
+      function press(code) {
+        if (state.fx === "heatmap") {
+          heat[code] = Math.min(1, heat[code] + 0.85);
+        } else if (state.fx === "reactive") {
+          heat[code] = 1;
+          // splash to neighbors
+          const el = keyEls[code];
+          if (el) {
+            const r = el.getBoundingClientRect();
+            Object.entries(keyEls).forEach(([c, e]) => {
+              if (c === code) return;
+              const q = e.getBoundingClientRect();
+              const d = Math.hypot(q.left - r.left, q.top - r.top);
+              if (d < 90) heat[c] = Math.max(heat[c], 0.55);
+            });
+          }
+        }
+      }
+      document.addEventListener("keydown", (e) => {
+        if (keyEls[e.code]) {
+          press(e.code);
+          e.preventDefault?.();
+        }
+      });
+
+      function render() {
+        const P = PALETTES[state.pal];
+        const B = state.idle ? 0 : state.bri / 100;
+        const kb = document.getElementById("kb");
+        kb.classList.toggle("breathing", state.fx === "breathing");
+        Object.entries(keyEls).forEach(([code, el]) => {
+          const g = el.querySelector(".glow");
+          if (!g) return;
+          let col = null,
+            inten = 0;
+          if (state.fx === "off") {
+            inten = 0;
+          } else if (state.fx === "solid") {
+            col = P.key;
+            inten = 0.85;
+          } else if (state.fx === "breathing") {
+            col = P.key;
+            inten = 1;
+          } else if (state.fx === "gradient") {
+            const x = el.getBoundingClientRect().left;
+            const t = Math.max(0, Math.min(1, (x - 140) / 820));
+            col = mix(P.key, P.side, t);
+            inten = 0.8;
+          } else {
+            // heatmap / reactive
+            const h = heat[code];
+            col = mix(P.key, P.hot, h);
+            inten = 0.14 + h * 0.86;
+          }
+          // FN layer highlight overrides
+          el.classList.remove("fnlit");
+          if (state.fn && FN_KEYS.has(code)) {
+            col = P.fn;
+            inten = Math.max(inten, 0.7);
+            el.classList.add("fnlit");
+          }
+          if (col) {
+            g.style.setProperty("--g", rgb(col));
+            g.style.setProperty("--gi", (inten * B).toFixed(3));
+          } else {
+            g.style.setProperty("--gi", 0);
+          }
+        });
+        // sides
+        const sc = sideColor(P);
+        [
+          document.getElementById("sideL"),
+          document.getElementById("sideR"),
+        ].forEach((s) => {
+          if (state.side === "off" || state.idle) {
+            s.style.opacity = 0;
+            return;
+          }
+          s.style.opacity = 1;
+          s.style.background = rgb(sc);
+          s.style.boxShadow =
+            "0 0 22px 5px " +
+            rgb(sc.map((v, i) => Math.round(v * 0.55 + 0))) +
+            ", 0 0 8px 2px " +
+            rgb(sc);
+          s.style.animation =
+            state.side === "breatheStatic"
+              ? "breathe 4.5s ease-in-out infinite"
+              : "none";
+          s.style.filter = "blur(1px) brightness(" + (0.5 + B).toFixed(2) + ")";
+        });
+        summary();
+      }
+      function sideColor(P) {
+        if (state.side === "layer" && state.fn) return P.fn;
+        return P.side;
+      }
+      // decay loop
+      setInterval(() => {
+        let ch = false;
+        Object.keys(heat).forEach((c) => {
+          if (heat[c] > 0) {
+            heat[c] = Math.max(
+              0,
+              heat[c] - (state.fx === "reactive" ? 0.1 : 0.035),
+            );
+            ch = true;
+          }
+        });
+        if (ch || true) render();
+      }, 70);
+
+      // palette swatches
+      const palWrap = document.getElementById("pal");
+      Object.entries(PALETTES).forEach(([id, p]) => {
+        const b = document.createElement("button");
+        b.dataset.pal = id;
+        b.innerHTML =
+          '<span class="dot" style="background:' +
+          rgb(p.side) +
+          '"></span><span class="nm">' +
+          p.name +
+          "</span>";
+        b.onclick = () => {
+          state.pal = id;
+          syncUI();
+        };
+        palWrap.appendChild(b);
+      });
+      // segmented handlers
+      document.querySelectorAll("#fx button").forEach(
+        (b) =>
+          (b.onclick = () => {
+            state.fx = b.dataset.fx;
+            syncUI();
+          }),
+      );
+      document.querySelectorAll("#side button").forEach(
+        (b) =>
+          (b.onclick = () => {
+            state.side = b.dataset.side;
+            syncUI();
+          }),
+      );
+      document.getElementById("bri").oninput = (e) => {
+        state.bri = +e.target.value;
+        document.getElementById("briv").textContent = e.target.value;
+        render();
+      };
+      document.getElementById("tgFn").onclick = (e) => {
+        state.fn = !state.fn;
+        syncUI();
+      };
+      document.getElementById("tgIdle").onclick = (e) => {
+        state.idle = !state.idle;
+        syncUI();
+      };
+      document.getElementById("applyRec").onclick = () => {
+        state = {
+          fx: "heatmap",
+          pal: "warm",
+          side: "layer",
+          bri: 72,
+          fn: false,
+          idle: false,
+        };
+        document.getElementById("bri").value = 72;
+        document.getElementById("briv").textContent = 72;
+        syncUI();
+      };
+      document.getElementById("applyMin").onclick = () => {
+        state = {
+          fx: "solid",
+          pal: "sage",
+          side: "accent",
+          bri: 45,
+          fn: false,
+          idle: false,
+        };
+        document.getElementById("bri").value = 45;
+        document.getElementById("briv").textContent = 45;
+        syncUI();
+      };
+
+      function syncUI() {
+        document
+          .querySelectorAll("#fx button")
+          .forEach((b) => b.classList.toggle("on", b.dataset.fx === state.fx));
+        document
+          .querySelectorAll("#side button")
+          .forEach((b) =>
+            b.classList.toggle("on", b.dataset.side === state.side),
+          );
+        document
+          .querySelectorAll("#pal button")
+          .forEach((b) =>
+            b.classList.toggle("on", b.dataset.pal === state.pal),
+          );
+        document.getElementById("tgFn").classList.toggle("on", state.fn);
+        document.getElementById("tgIdle").classList.toggle("on", state.idle);
+        render();
+      }
+      function summary() {
+        const fxN = {
+          heatmap: "Reactive Heatmap",
+          reactive: "Reactive Splash",
+          solid: "Solid",
+          breathing: "Breathing",
+          gradient: "Static Gradient",
+          off: "Off",
+        }[state.fx];
+        const sideN = {
+          accent: "Static accent",
+          layer: "Layer indicator",
+          breatheStatic: "Slow breathe",
+          off: "Off",
+        }[state.side];
+        document.getElementById("summary").innerHTML =
+          "<b>Effect:</b> " +
+          fxN +
+          "<br><b>Palette:</b> " +
+          PALETTES[state.pal].name +
+          "<br><b>Side glow:</b> " +
+          sideN +
+          "<br><b>Brightness:</b> " +
+          state.bri +
+          "%";
+      }
+      build();
+      syncUI();
+    </script>
+  </body>
+</html>

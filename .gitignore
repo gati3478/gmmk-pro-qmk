@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+
+# Session tooling state (not part of the keyboard project)
+.remember/
+
+# QMK build artifacts (generated locally, never committed)
+.build/
+*.o
+*.d
+*.lst
+*.sym
+
+# Editor / tooling
+.idea/
+.vscode/
+*.swp
+node_modules/
