@@ -21,6 +21,11 @@ enum knob_modes { KNOB_SCROLL, KNOB_UNDO };
 static uint8_t knob_mode = KNOB_SCROLL;
 static bool side_leds_on = true;
 
+// Caps is a layer-tap: _FN commits only after TAPPING_TERM or an intercepting keypress,
+// and an encoder turn is invisible to that state machine. Track the raw Caps hold so the
+// knob routes to _FN from the first click instead of blipping Volume during that window.
+static bool caps_held = false;
+
 static bool is_mac(void) {
     return detected_host_os() != OS_LINUX; // default to macOS when unsure
 }
@@ -57,6 +62,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // clang-format on
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (keycode == LT(_FN, KC_CAPS)) {   // track the Caps hold for the encoder (see caps_held)
+        caps_held = record->event.pressed;
+        return true;                     // let QMK run the layer-tap normally
+    }
     if (!record->event.pressed) return true;
     switch (keycode) {
         case OS_SHOT_CLIP:
@@ -87,7 +96,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
 bool encoder_update_user(uint8_t index, bool clockwise) {
     if (index != 0) return false;
-    if (get_highest_layer(layer_state) == _FN) {
+    if (get_highest_layer(layer_state) == _FN || caps_held) {  // caps_held: knob works before the LT resolves
         if (knob_mode == KNOB_SCROLL) {
             tap_code16(clockwise ? MS_WHLU : MS_WHLD); // clockwise = wheel up (flipped per feel); MS_WH* are current names
         } else { // KNOB_UNDO
@@ -121,8 +130,8 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
     uint8_t r, g, b;
     if (host_keyboard_led_state().caps_lock) {          // pulsing red (triangle wave, no lib deps)
-        uint16_t t = timer_read() % 1000u;
-        uint8_t p = (t < 500u) ? (uint8_t)(t * 255u / 500u) : (uint8_t)((1000u - t) * 255u / 500u);
+        uint32_t t = timer_read32() % 1000u;  // 32-bit avoids the ~65 s wrap hiccup in the pulse
+        uint8_t  p = (t < 500u) ? (uint8_t)(t * 255u / 500u) : (uint8_t)((1000u - t) * 255u / 500u);
         r = p; g = 0; b = 0;
     } else if (get_highest_layer(layer_state) == _FN) { // knob-mode color
         if (knob_mode == KNOB_SCROLL) { r = 100; g = 190; b = 110; } // sage (scroll)

@@ -180,6 +180,8 @@ Driven in `rgb_matrix_indicators_advanced_user`, overriding the GMMK Pro edge-LE
 
 Dark at rest — the strips stay off during normal typing (the per-key salmon ripple carries that). When lit they carry three facts: that you're on the Fn layer, which knob mode is live, and the caps-lock safety net. Colors are trivially tunable in source.
 
+**macOS caveat — the Caps-Lock (red) row is effectively a Linux-only readout.** On macOS the physical Caps is remapped to _switch input source_ (`docs/macos-setup.md`), so the host never reports caps-lock ON and the red pulse **never fires there**. On Fedora, tapping Caps toggles real caps-lock, so it lights as designed. This is intended, not a defect — the pulse is a caps-lock safety net and only has a job where caps-lock can occur; on the primary (macOS) machine this top-priority strip state is simply dormant.
+
 ---
 
 ## 9. Custom keycodes (enum)
