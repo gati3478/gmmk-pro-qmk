@@ -18,7 +18,9 @@ it, the hardware it runs on, and how to build/flash it.
 | **Hardware** (parts, specs, build mods, spare keycaps, purchase log) | [`docs/HARDWARE.md`](docs/HARDWARE.md)           |
 | **macOS one-time settings** (Caps→input, Dictation, DND)             | [`docs/macos-setup.md`](docs/macos-setup.md)     |
 | **Firmware source** (the actual keymap — source of truth)            | `firmware/gati/{keymap.c,config.h,rules.mk}`     |
-| **Build/flash tool** (symlinks into QMK → compile/flash)             | `scripts/flash.sh`                               |
+| **Build/flash tool** (symlinks into QMK → compile/flash/setup/…)     | `scripts/flash.sh`                               |
+| **Build pin** (QMK rev + ARM toolchain — pinned source of truth)     | `scripts/qmk.pin`                                |
+| **CI** (compile-on-push, uploads firmware artifact)                  | `.github/workflows/build.yml`                    |
 | **RGB color explorer**                                               | [`docs/rgb-preview.html`](docs/rgb-preview.html) |
 | **Recovered original firmware** (provenance, not reused)             | `reference/`                                     |
 

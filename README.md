@@ -32,6 +32,6 @@ One-time toolchain (macOS): `curl -fsSL https://install.qmk.fm | sh`, then `./sc
 
 ## Status
 
-**v1.1** — built, flashed & verified on hardware; post-audit hardening. Branch `tooling-overhaul` adds a
-pinned QMK + modern toolchain (gcc 15.2.0), push-triggered CI, and an expanded `flash.sh`. Authoritative
-status: [`CLAUDE.md`](CLAUDE.md) §Status.
+**v1.1** — built, flashed & verified on hardware; post-audit hardening. The tooling overhaul is **merged
+to `main`** and hardware-verified: pinned QMK + modern toolchain (gcc 15.2.0), push-triggered CI, and an
+expanded `flash.sh`. Authoritative status: [`CLAUDE.md`](CLAUDE.md) §Status.
