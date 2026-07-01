@@ -29,4 +29,4 @@ One-time toolchain: `brew install qmk/qmk/qmk` then `qmk setup`.
 
 ## Status
 
-Design ✅ · Plan ✅ · Repo ✅ · **Firmware build + flash: not yet started** (begin at `docs/PLAN.md` Task 1).
+Design ✅ · Plan ✅ · Repo ✅ · **Firmware built, flashed & verified on hardware — v1.0.**

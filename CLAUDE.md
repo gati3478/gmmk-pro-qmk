@@ -31,7 +31,7 @@ Never let the docs and `firmware/gati/` disagree.
 - ✅ Design complete & approved (`docs/DESIGN.md`).
 - ✅ Implementation plan written (`docs/PLAN.md`, 7 tasks).
 - ✅ Repo initialized; original firmware recovered & preserved.
-- ⏳ **Not yet done:** QMK toolchain install, firmware build, first flash. Start at **Plan Task 1**.
+- ✅ **Built, flashed & verified on hardware (v1.0).** All 7 plan tasks complete.
 
 ---
 
@@ -51,8 +51,8 @@ Prev Play Next · Mute Vol− Vol+.
 **RGB:** dark base, **salmon** bloom on keypress (`SOLID_REACTIVE_SIMPLE`), 64% brightness,
 off on idle (8 min) & Mac sleep.
 
-**Side strips = a readout** (priority): sleep→off ▸ **Caps Lock → pulsing red** ▸
-**Fn held → knob-mode color** (teal scroll / amber undo) ▸ **base → salmon**.
+**Side strips = a readout** (priority): sleep/idle→off ▸ **Caps Lock → pulsing red** ▸
+**Fn held → knob-mode color** (sage scroll / amber undo) ▸ **base → off** (per-key salmon carries typing).
 
 Full maps and the "why" behind every choice: [`docs/DESIGN.md`](docs/DESIGN.md).
 
@@ -78,7 +78,7 @@ Full maps and the "why" behind every choice: [`docs/DESIGN.md`](docs/DESIGN.md).
 ```
 
 - One-time toolchain: `brew install qmk/qmk/qmk` then `qmk setup` (see `docs/DESIGN.md` §12).
-- `flash.sh` symlinks `firmware/gati/` into `~/qmk_firmware/keyboards/gmmk/pro/ansi/keymaps/gati`,
+- `flash.sh` symlinks `firmware/gati/` into `~/qmk_firmware/keyboards/gmmk/pro/rev1/ansi/keymaps/gati`,
   so **this repo stays the source of truth** and QMK is just the compiler.
 
 ### Enter bootloader (any of these — you can never brick the layout)

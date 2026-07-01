@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-01
 **Owner:** Gati
-**Status:** Approved — implementation plan written (`docs/PLAN.md`); firmware build not yet started
+**Status:** Built, flashed & verified on hardware (**v1.0**) — 2-layer keymap, modal knob, reactive-salmon per-key RGB, functional side-LED readout. All 7 plan tasks complete.
 **Firmware base:** Pure mainline QMK (hand-written C). This repository is the single source of truth.
 
 ---
@@ -184,18 +184,18 @@ Dark at rest — the strips stay off during normal typing (the per-key salmon ri
 
 ## 9. Custom keycodes (enum)
 
-| Keycode                | Purpose                                                  |
-| ---------------------- | -------------------------------------------------------- |
-| `OS_SHOT_CLIP`         | Screenshot region → clipboard (OS-aware) — base Shot key |
-| `OS_SHOT_FILE`         | Screenshot region → file (OS-aware) — Fn+Shot            |
-| `OS_MCTL`              | Mission Control / overview (OS-aware)                    |
-| `OS_SPOT`              | Spotlight / search (OS-aware)                            |
-| `OS_UNDO` / `OS_REDO`  | (used by knob) OS-aware undo/redo                        |
-| `KNOB_MODE`            | Cycle knob mode (Fn + knob push)                         |
-| `SIDE_TOGG`            | Toggle side-strip lighting (Fn+9)                        |
-| `MAC_DICT` / `MAC_DND` | Fixed combos for Dictation / DND (user binds in macOS)   |
+| Keycode                   | Purpose                                                  |
+| ------------------------- | -------------------------------------------------------- |
+| `OS_SHOT_CLIP`            | Screenshot region → clipboard (OS-aware) — base Shot key |
+| `OS_SHOT_FILE`            | Screenshot region → file (OS-aware) — Fn+Shot            |
+| `OS_MCTL`                 | Mission Control / overview (OS-aware)                    |
+| `OS_SPOT`                 | Spotlight / search (OS-aware)                            |
+| `OS_WORD_L` / `OS_WORD_R` | Word left / right (OS-aware) — Fn+←/→                    |
+| `OS_DOC_UP` / `OS_DOC_DN` | Document top / bottom (OS-aware) — Fn+↑/↓                |
+| `KNOB_MODE`               | Cycle knob mode (Fn + knob push)                         |
+| `SIDE_TOGG`               | Toggle side-strip lighting (Fn+9)                        |
 
-Word-nav / doc-nav OS-aware combos are handled inline (no dedicated keycode needed) via the OS helper.
+`MAC_DICT` / `MAC_DND` (⌃⌥⌘D / ⌃⌥⌘N) are fixed-combo `#define`s dropped straight into the Fn layer, **not** enum keycodes. Undo/redo is OS-aware but handled inline in `encoder_update_user` (the knob), so it needs no dedicated keycode.
 
 ---
 
@@ -218,14 +218,14 @@ NKRO_ENABLE         = yes
 #define RGB_MATRIX_TIMEOUT 480000          // 8 min idle → off
 #define RGB_MATRIX_SLEEP
 #define RGB_MATRIX_DEFAULT_MODE RGB_MATRIX_SOLID_REACTIVE_SIMPLE
-#define RGB_MATRIX_DEFAULT_HUE  10         // salmon-ish
-#define RGB_MATRIX_DEFAULT_SAT  200
+#define RGB_MATRIX_DEFAULT_HUE  12         // salmon-ish
+#define RGB_MATRIX_DEFAULT_SAT  165
 #define RGB_MATRIX_DEFAULT_VAL  163        // ~64%
 #define RGB_MATRIX_KEYPRESSES              // required for SOLID_REACTIVE effects
 #define ENABLE_RGB_MATRIX_SOLID_REACTIVE_SIMPLE
 ```
 
-(Exact side-LED index list taken from the board's `g_led_config` during implementation.)
+(Side strips are targeted by the `LED_FLAG_UNDERGLOW` (`0x02`) flag in `g_led_config`, not a hard-coded index list. A version stamp in the user-EEPROM block (`eeconfig_*_user`) re-applies the RGB defaults once after a flash, since DFU never erases EEPROM.)
 
 ---
 
