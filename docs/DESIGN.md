@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-01
 **Owner:** Gati
-**Status:** v1.0 shipped — see `CLAUDE.md` §Status (authoritative).
+**Status:** v1.1 shipped — see `CLAUDE.md` §Status (authoritative).
 **Firmware base:** Pure mainline QMK (hand-written C). This repository is the single source of truth.
 
 ---
