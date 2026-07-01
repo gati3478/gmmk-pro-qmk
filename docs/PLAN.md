@@ -254,7 +254,7 @@ Change `rules.mk` to:
 
 ```make
 NKRO_ENABLE     = yes    # Fn+N = NK_TOGG
-MOUSEKEY_ENABLE = yes    # knob scroll (KC_MS_WH_UP/DOWN)
+MOUSEKEY_ENABLE = yes    # knob scroll (MS_WHLU/MS_WHLD)
 ```
 
 - [ ] **Step 2: Add knob state + mode toggle in `keymap.c`**
@@ -281,7 +281,7 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
     if (index != 0) return false;
     if (get_highest_layer(layer_state) == _FN) {
         if (knob_mode == KNOB_SCROLL) {
-            tap_code(clockwise ? KC_MS_WH_DOWN : KC_MS_WH_UP);
+            tap_code16(clockwise ? MS_WHLD : MS_WHLU); // MS_WH* are the current names; sent via tap_code16
         } else { // KNOB_UNDO (macOS combos for now; OS-aware in Task 4)
             tap_code16(clockwise ? LGUI(LSFT(KC_Z)) : LGUI(KC_Z)); // redo / undo
         }
@@ -390,7 +390,7 @@ Expected: `[OK]`.
 - [ ] **Step 6: Flash + verify (Mac now; Fedora later)**
 
 Flash, then confirm on Mac nothing regressed: screenshot-to-clipboard, Fn+arrows word/doc nav, Fn+F3 Mission Control, Fn+F4 Spotlight, knob undo/redo all behave as before. (Fedora verification is deferred until the Linux box is set up; the branches are already in place.)
-If `os_detection` misreads behind a hub/KVM, add `#define OS_DETECTION_DEBOUNCE 250` to `config.h` and reflash.
+If `os_detection` misreads behind a hub/KVM, add `#define OS_DETECTION_DEBOUNCE 250` to `config.h`; for KVM switching also try `OS_DETECTION_KEYBOARD_RESET` (redetect on reconnect) or `OS_DETECTION_SINGLE_REPORT`. QMK docs call it a best-guess not for critical functions — which is exactly why `is_mac()` defaults to macOS when unsure.
 
 - [ ] **Step 7: Commit**
 
@@ -504,7 +504,7 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 - [ ] **Step 3: Compile (the test)**
 
 Run: `./scripts/flash.sh compile`
-Expected: `[OK]`. If no side LEDs light in Step 4, the board may not flag them `LED_FLAG_UNDERGLOW` — read `~/qmk_firmware/keyboards/gmmk/pro/ansi/ansi.c` `g_led_config`, identify the left/right edge LED indices, and replace the `HAS_FLAGS(...)` check with an explicit index list. If the side strips stay lit while idle/asleep, add a guard `if (!rgb_matrix_is_enabled()) return false;` at the top of the function.
+Expected: `[OK]`. **Verify the flag approach before trusting it** — run `grep -n "LED_FLAG_UNDERGLOW" ~/qmk_firmware/keyboards/gmmk/pro/rev1/ansi/ansi.c`. The `g_led_config` flags array (third block) should mark the side LEDs with `LED_FLAG_UNDERGLOW` (value `2`). If it does, the `HAS_FLAGS(...)` loop is correct. If it doesn't — or no side LEDs light in Step 4 — read that flags array, collect the indices whose flag is `2` (those are the side strips), and replace the loop with an explicit `const uint8_t SIDE_LEDS[] = { ... };` list (the reference community configs do this). If the strips stay lit while idle/asleep, add `if (!rgb_matrix_is_enabled()) return false;` at the top of the function.
 
 - [ ] **Step 4: Flash + verify**
 
@@ -569,4 +569,6 @@ git tag -a v1.0 -m "First working build: 2-layer keymap, modal knob, reactive-sa
 
 **Type consistency:** `knob_mode` (uint8_t, `KNOB_SCROLL/KNOB_UNDO`), `side_leds_on` (bool), `is_mac()` (bool), custom-keycode enum names — all referenced consistently across Tasks 2/3/4/6. `LAYOUT` written once in Task 2, never re-edited. ✓
 
-**Known implementation risks (flagged with fixes inline):** `LAYOUT` arg-count drift (Task 2 Step 6), `RGB_MATRIX_SLEEP` naming (Task 5 Step 2), `LED_FLAG_UNDERGLOW` targeting the wrong LEDs (Task 6 Step 3), `os_detection` flakiness (Task 4 Step 6), scroll direction (Task 3 Step 5).
+**Verified against current QMK docs (2026):** `RGB_MATRIX_SLEEP` (auto suspend-off), `RGB_MATRIX_TIMEOUT`, the `RGB_MATRIX_DEFAULT_*` defines, `os_detection` API, and `tap_code16` for modded keycodes are all current and correct.
+
+**Known implementation risks (flagged with fixes inline):** `LAYOUT` arg-count drift (Task 2 Step 6); side-LED flag vs. explicit indices — verified at build time via grep (Task 6 Step 3); `os_detection` flakiness behind KVMs (Task 4 Step 6); scroll direction feel (Task 3 Step 5). Mouse-wheel keycodes use the current `MS_WHLU`/`MS_WHLD` names via `tap_code16` (Task 3).

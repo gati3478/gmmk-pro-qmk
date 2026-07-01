@@ -150,7 +150,7 @@ Hold Caps or Fn. Unlisted keys are transparent.
 | Fn held, mode = **Scroll** (default) | Mouse wheel ↑/↓ (terminal scrollback, pages) | `Fn+push` → switch to Undo mode   |
 | Fn held, mode = **Undo/Redo**        | OS-aware Undo / Redo                         | `Fn+push` → switch to Scroll mode |
 
-- Scroll requires `MOUSEKEY_ENABLE` (`KC_MS_WH_UP` / `KC_MS_WH_DOWN`).
+- Scroll requires `MOUSEKEY_ENABLE`, sent as `MS_WHLU` / `MS_WHLD` via `tap_code16` (the current keycode names).
 - Undo/Redo OS-aware: Mac `⌘Z` / `⌘⇧Z`, Linux `Ctrl+Z` / `Ctrl+Shift+Z`.
 - Mode persists in a static var; only meaningful while Fn is held. Reflected live on the side strips (§8).
 
