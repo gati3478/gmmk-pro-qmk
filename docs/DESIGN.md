@@ -70,21 +70,21 @@ These artifacts are preserved under `reference/` for provenance; **none of the o
 ├──────┴┬───┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴──┬──┬────┤  ├────┤
 │ Shift │ Z  │ X │ C │ V │ B │ N │ M │ , │ . │  /  │Sf│ ↑  │  │PgDn│
 ├────┬──┴┬───┴┬──┴───┴───┴───┴───┴──┬┴──┬┴──┬┴──┬──┼──┴┬───┼──┴────┤
-│Ctrl│Opt│Cmd │       Space        │Cmd│Opt│Fn │  │ ← │ ↓ │  →    │
+│Ctrl│Opt│Cmd │       Space        │Ctl│Opt│Fn │  │ ← │ ↓ │  →    │
 └────┴───┴────┴────────────────────┴───┴───┴───┴──┴───┴───┴───────┘
-    Ctrl · Opt · Cmd │ space │ Cmd · Opt · Fn  (mirrors the MacBook: Cmd both sides of space)
+    Ctrl · Opt · Cmd │ space │ Ctrl · Opt · Fn   (⌘ left of space mirrors the MacBook; right stays honest Ctrl to match its cap)
 ```
 
 Deviations from stock (everything else is standard ANSI):
 
-| Key                             | Behavior                                   | Notes                                                                                                                                                      |
-| ------------------------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Caps**                        | `LT(_FN, KC_CAPS)`                         | Tap = Caps Lock (macOS **Caps→switch input source** setting handles GE⇄EN); hold = `_FN`. A hold never emits Caps, so no accidental caps toggle.           |
-| **Shot** (top-right, was PrtSc) | OS-aware **screenshot region → clipboard** | Mac `⌃⌘⇧4`, Linux/GNOME `Ctrl+Shift+PrtSc`. Optimized for capture→paste into Claude/chat.                                                                  |
-| **Knob**                        | turn = Volume ± · push = Play/Pause        |                                                                                                                                                            |
-| Bottom-left mods                | `LCTL · LALT(Opt) · LGUI(Cmd)`             | Cmd immediately left of space (matches MacBook). Caps: `Ctrl · Alt · Code`.                                                                                |
-| Bottom-right mods               | `RGUI(Cmd) · RALT(Opt) · MO(_FN)`          | Cmd immediately right of space, Fn rightmost (next to arrows) for one-handed Fn+arrow / Fn+knob. No right-Ctrl (laptop has none). Caps: `Code · Alt · Fn`. |
-| Right column                    | `Del · End · PgUp · PgDn`                  | Standard nav stack; already correctly capped.                                                                                                              |
+| Key                             | Behavior                                   | Notes                                                                                                                                                                            |
+| ------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Caps**                        | `LT(_FN, KC_CAPS)`                         | Tap = Caps Lock (macOS **Caps→switch input source** setting handles GE⇄EN); hold = `_FN`. A hold never emits Caps, so no accidental caps toggle.                                 |
+| **Shot** (top-right, was PrtSc) | OS-aware **screenshot region → clipboard** | Mac `⌃⌘⇧4`, Linux/GNOME `Ctrl+Shift+PrtSc`. Optimized for capture→paste into Claude/chat.                                                                                        |
+| **Knob**                        | turn = Volume ± · push = Play/Pause        |                                                                                                                                                                                  |
+| Bottom-left mods                | `LCTL · LALT(Opt) · LGUI(Cmd)`             | Cmd immediately left of space (matches MacBook). Caps: `Ctrl · Alt · Code`.                                                                                                      |
+| Bottom-right mods               | `RCTL · RALT(Opt) · MO(_FN)`               | Right of space = Ctrl · Opt · Fn; Fn rightmost (next to arrows) for one-handed Fn+arrow / Fn+knob. Keycaps match keycodes exactly (no mislabeled keys). Caps: `Ctrl · Alt · Fn`. |
+| Right column                    | `Del · End · PgUp · PgDn`                  | Standard nav stack; already correctly capped.                                                                                                                                    |
 
 ---
 
