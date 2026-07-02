@@ -1,5 +1,9 @@
 name: build
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    paths-ignore: ["**.md", "docs/**", "reference/**"]
+  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -13,7 +17,7 @@ jobs:
     container: ghcr.io/qmk/qmk_cli@sha256:b7d7fa8fb4432b569931de5ad59098cb788f440ed61a62c5126746b71aee0f4a
     steps:
       - name: Checkout firmware repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           path: fw
 
@@ -46,8 +50,16 @@ jobs:
           echo "### Firmware: $size bytes ($((size * 100 / 262144))% of 256 KB)" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload firmware artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: gmmk_pro_rev1_ansi_gati
           path: qmk/gmmk_pro_rev1_ansi_gati.bin
           if-no-files-found: error
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - name: shellcheck flash.sh
+        run: shellcheck -x scripts/flash.sh

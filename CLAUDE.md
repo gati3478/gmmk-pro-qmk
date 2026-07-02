@@ -20,7 +20,8 @@ it, the hardware it runs on, and how to build/flash it.
 | **Firmware source** (the actual keymap — source of truth)            | `firmware/gati/{keymap.c,config.h,rules.mk}`     |
 | **Build/flash tool** (symlinks into QMK → compile/flash/setup/…)     | `scripts/flash.sh`                               |
 | **Build pin** (QMK rev + ARM toolchain — pinned source of truth)     | `scripts/qmk.pin`                                |
-| **CI** (compile-on-push, uploads firmware artifact)                  | `.github/workflows/build.yml`                    |
+| **CI** (compile + shellcheck on push, uploads firmware artifact)     | `.github/workflows/build.yml`                    |
+| **Tooling-overhaul spec & plan** (the pin/CI work, task by task)     | `docs/superpowers/{specs,plans}/`                |
 | **RGB color explorer**                                               | [`docs/rgb-preview.html`](docs/rgb-preview.html) |
 | **Recovered original firmware** (provenance, not reused)             | `reference/`                                     |
 
@@ -98,8 +99,9 @@ Full maps and the "why" behind every choice: [`docs/DESIGN.md`](docs/DESIGN.md).
 - **Pinned build.** `scripts/qmk.pin` is the single source of truth for the QMK revision (`0.33.8`)
   and the ARM toolchain (`arm-none-eabi-gcc 15.2.0`, qmk_toolchains `a55a2b0`), shared by `flash.sh`
   and CI. `compile`/`flash`/`lint`/`size` warn if `~/qmk_firmware` has drifted off the pinned rev.
-- **CI.** `.github/workflows/build.yml` compiles on every push in the digest-pinned `qmk_cli`
-  container and uploads `gmmk_pro_rev1_ansi_gati.bin`; a SHA-verify step fails loudly if the tag moves.
+- **CI.** `.github/workflows/build.yml` compiles every firmware-relevant push (doc-only pushes are
+  skipped) in the digest-pinned `qmk_cli` container and uploads `gmmk_pro_rev1_ansi_gati.bin`; a
+  SHA-verify step fails loudly if the tag moves, and a shellcheck job gates `flash.sh`.
 - **One-time toolchain (macOS, Apple Silicon):** `curl -fsSL https://install.qmk.fm | sh`, then
   `./scripts/flash.sh setup`. Details (install dir, staying pinned, why not brew): **Gotchas**.
 - `flash.sh` symlinks `firmware/gati/` into `~/qmk_firmware/keyboards/gmmk/pro/rev1/ansi/keymaps/gati`,

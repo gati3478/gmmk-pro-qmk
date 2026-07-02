@@ -3,6 +3,7 @@ set -euo pipefail
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # Pinned QMK revision — single source of truth, shared with CI.
+# shellcheck source-path=SCRIPTDIR
 # shellcheck source=qmk.pin
 source "$REPO/scripts/qmk.pin"
 

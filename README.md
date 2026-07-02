@@ -26,7 +26,7 @@ for the keyboard.
 ./scripts/flash.sh flash       # build + flash (enter bootloader first)
 ```
 
-QMK rev + ARM toolchain are pinned in [`scripts/qmk.pin`](scripts/qmk.pin) and built in CI on every push.
+QMK rev + ARM toolchain are pinned in [`scripts/qmk.pin`](scripts/qmk.pin) and built in CI on every firmware push.
 One-time toolchain (macOS): `curl -fsSL https://install.qmk.fm | sh`, then `./scripts/flash.sh setup`.
 **Enter bootloader:** press **Fn+B**, or hold **Esc** while plugging in the cable.
 
