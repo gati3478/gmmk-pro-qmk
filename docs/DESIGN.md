@@ -186,16 +186,16 @@ Dark at rest — the strips stay off during normal typing (the per-key salmon ri
 
 ## 9. Custom keycodes (enum)
 
-| Keycode                   | Purpose                                                  |
-| ------------------------- | -------------------------------------------------------- |
-| `OS_SHOT_CLIP`            | Screenshot region → clipboard (OS-aware) — base Shot key |
-| `OS_SHOT_FILE`            | Screenshot region → file (OS-aware) — Fn+Shot            |
-| `OS_MCTL`                 | Mission Control / overview (OS-aware)                    |
-| `OS_SPOT`                 | Spotlight / search (OS-aware)                            |
-| `OS_WORD_L` / `OS_WORD_R` | Word left / right (OS-aware) — Fn+←/→                    |
-| `OS_DOC_UP` / `OS_DOC_DN` | Document top / bottom (OS-aware) — Fn+↑/↓                |
-| `KNOB_MODE`               | Cycle knob mode (Fn + knob push)                         |
-| `SIDE_TOGG`               | Toggle side-strip lighting (Fn+9)                        |
+| Keycode                   | Purpose                                                              |
+| ------------------------- | -------------------------------------------------------------------- |
+| `OS_SHOT_CLIP`            | Screenshot region → clipboard (OS-aware) — base Shot key             |
+| `OS_SHOT_FILE`            | Screenshot region → file (OS-aware) — Fn+Shot                        |
+| `OS_MCTL`                 | Mission Control / overview (OS-aware)                                |
+| `OS_SPOT`                 | Spotlight / search (OS-aware)                                        |
+| `OS_WORD_L` / `OS_WORD_R` | Word left / right (OS-aware) — Fn+←/→                                |
+| `OS_DOC_UP` / `OS_DOC_DN` | Document top / bottom (OS-aware) — Fn+↑/↓                            |
+| `KNOB_MODE`               | Cycle knob mode (Fn + knob push)                                     |
+| `SIDE_TOGG`               | Toggle side-strip lighting (Fn+9) — static, resets to on at power-up |
 
 `MAC_DICT` / `MAC_DND` (⌃⌥⌘D / ⌃⌥⌘N) are fixed-combo `#define`s dropped straight into the Fn layer, **not** enum keycodes. Undo/redo is OS-aware but handled inline in `encoder_update_user` (the knob), so it needs no dedicated keycode.
 
