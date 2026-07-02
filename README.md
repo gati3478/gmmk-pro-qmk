@@ -4,32 +4,41 @@
 [![License: GPL-2.0-or-later](https://img.shields.io/badge/License-GPL--2.0--or--later-blue.svg)](LICENSE)
 
 **A two-layer, macOS-first QMK keymap for the Glorious GMMK Pro (75% ANSI) —
-with the full engineering treatment: pinned reproducible builds, CI,
-hardware-verified releases, and design docs that record the "why" behind every
-binding.**
+built like production software: pinned reproducible builds, CI, and
+hardware-verified releases.**
 
-Tuned for macOS (primary) and Fedora/GNOME (secondary) — writing, browsing,
-terminal, programming, and Claude Code. No Windows. This repo is the single
-source of truth for the keyboard: firmware, design rationale, hardware build
-log, and tooling.
+Daily driver for writing, terminal work, programming, and Claude Code on macOS
+(primary) and Fedora/GNOME (secondary). No Windows. This repo is the single
+source of truth for the board — firmware, design rationale, hardware log, and
+tooling.
+
+## The keymap in 10 seconds
+
+```text
+Caps       tap = Caps Lock (macOS: switch input source) · hold = Fn layer
+Knob       turn = Volume · press = Play/Pause — with Fn: scroll ⇄ undo/redo (Fn+press cycles)
+Fn F-row   the MacBook media row: Bri− Bri+ · Mission Ctl · Spotlight · Dictation · DND
+           · Prev Play Next · Mute Vol− Vol+
+Bottom     Ctrl · Opt · Cmd │ Space │ Ctrl · Opt · Fn     (⌘ left of Space, like a MacBook)
+Side LEDs  a readout: pulsing red = Caps Lock · sage/amber = knob mode · off at rest
+Per-key    dark base, salmon bloom on each keypress; off after 8 min idle & on Mac sleep
+```
+
+Everything else is standard ANSI. Full maps and the "why" behind every choice:
+[`docs/DESIGN.md`](docs/DESIGN.md).
 
 ## Highlights
 
-- **Exactly two layers.** `_BASE` and `_FN` (hold Caps _or_ Fn) — every binding
-  earns its place, and keycodes always match the printed keycaps.
-- **Modal knob.** Volume / Play-Pause on base; on Fn the turn becomes
-  **scroll ⇄ undo/redo** (Fn+push cycles the mode).
-- **Side strips as a readout.** Pulsing red = Caps Lock, sage = knob-scroll,
-  amber = knob-undo, off at rest — the per-key salmon reactive glow carries
-  typing. (PBT non-shine-through caps + south-facing LEDs make the strips the
-  information surface; see `docs/DESIGN.md`.)
-- **OS-aware keys.** Screenshot, Mission Control / overview, word- and
-  document-nav, undo/redo resolve per-host via QMK's OS detection; unknown
-  hosts default to macOS.
-- **Reproducible builds.** QMK revision + ARM toolchain pinned in
-  [`scripts/qmk.pin`](scripts/qmk.pin); CI compiles in a digest-pinned
-  container with SHA-verified sources and SHA-pinned actions, and uploads the
-  firmware artifact.
+- **Exactly two layers, honest keycaps.** Every binding earns its place, and a
+  keycode never disagrees with the printed cap.
+- **Side strips carry the information.** PBT non-shine-through caps over
+  south-facing LEDs mean per-key RGB reads as edge glow only — so state
+  (layer, knob mode, caps lock) lives on the side strips instead.
+- **OS-aware.** Screenshot, Mission Control / overview, word- and document-nav,
+  undo/redo resolve per host at runtime; unknown hosts default to macOS.
+- **Reproducible.** QMK revision + ARM toolchain pinned in
+  [`scripts/qmk.pin`](scripts/qmk.pin); CI builds in a digest-pinned container
+  from a SHA-verified QMK clone with SHA-pinned actions.
 - **Unbrickable.** The STM32 ROM DFU bootloader is unerasable — `Fn+B`,
   Esc-while-plugging-in, or the PCB reset button always recover.
 
@@ -68,12 +77,10 @@ including the ideas that were considered and rejected.
 
 ## Status
 
-**v1.2** — flashed & verified on hardware. Firmware behavior is v1.1
-(post-audit hardening); v1.2 adds the pinned/reproducible build chain, CI, and
-the public-release polish. Authoritative status: [`CLAUDE.md`](CLAUDE.md)
-§Status · versions: [`CHANGELOG.md`](CHANGELOG.md) ·
-[Releases](https://github.com/gati3478/gmmk-pro-qmk/releases) ship the
-hardware-verified `.bin`.
+**v1.2** — hardware-verified: v1.1 firmware behavior plus the reproducible
+build chain and public-release polish. Live status: [`CLAUDE.md`](CLAUDE.md)
+§Status · versions: [`CHANGELOG.md`](CHANGELOG.md) · flashable `.bin`:
+[Releases](https://github.com/gati3478/gmmk-pro-qmk/releases).
 
 ## License
 

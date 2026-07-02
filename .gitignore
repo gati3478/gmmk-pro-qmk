@@ -4,6 +4,7 @@
 # Session tooling state (not part of the keyboard project)
 .remember/
 .superpowers/
+.claude/settings.local.json
 
 # QMK build artifacts (generated locally, never committed)
 .build/

@@ -85,6 +85,8 @@ Full maps and the "why" behind every choice: [`docs/DESIGN.md`](docs/DESIGN.md).
 - Pure **mainline QMK**, no VIA/Vial. The C source in this repo is the source of truth.
 - The full `LAYOUT` is written once and not re-edited; behavior changes go in handler functions
   (`process_record_user`, `encoder_update_user`, `rgb_matrix_indicators_advanced_user`) + config.
+- **`reference/` is frozen provenance.** Never edit its contents — enforced by a PreToolUse hook
+  in `.claude/settings.json`.
 
 ---
 

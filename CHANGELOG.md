@@ -9,6 +9,11 @@ verified on hardware before it's tagged.
 
 ## [Unreleased]
 
+### Added
+
+- Claude Code guard hook (`.claude/settings.json`): edits under `reference/`
+  are blocked — frozen provenance is now enforced, not just documented.
+
 ## [1.2] - 2026-07-02
 
 Tooling overhaul + public release. **No firmware behavior changes** — same
