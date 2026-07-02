@@ -33,12 +33,18 @@ Never let the docs and `firmware/gati/` disagree.
 
 _Single source of truth for build status — `README.md` and `docs/DESIGN.md` point here._
 
-- ✅ Design complete & approved (`docs/DESIGN.md`).
-- ✅ Implementation plan written (`docs/PLAN.md`, 7 tasks).
-- ✅ Repo initialized; original firmware recovered & preserved.
-- ✅ **Built, flashed & verified on hardware (v1.0).** All 7 plan tasks complete.
-- ✅ **v1.1 — post-audit hardening (flashed & verified).** Adversarial audit (auditor + reviewer subagents, cross-checked against QMK source) passed: overall risk low, no brick/hang/corruption paths. Fixes: encoder Volume-blip during a Caps-hold, 32-bit caps-pulse timer. Tooling: `flash.sh` now auto-kills dfu-util wedged on `:leave`. Caps-red side-strip documented as macOS-dormant (`docs/DESIGN.md` §8.2).
-- ✅ **Tooling overhaul (flashed & verified; merged to `main`).** QMK rev **and** ARM toolchain pinned in `scripts/qmk.pin` (QMK `0.33.8`, gcc `15.2.0`/`a55a2b0`); push-triggered CI (`.github/workflows/build.yml`) compiles in a digest-pinned container and uploads the firmware; `flash.sh` gained `setup/doctor/lint/format/size` + a pin-drift warning. Local toolchain modernized gcc 9.2.1 → 15.2.0 to match CI — builds functionally identical, differing only by an inert newlib build-path string (`docs/DESIGN.md` §12). Firmware **behavior** unchanged from v1.1; the modern-toolchain build (47920 B) was flashed and verified on hardware (typing / knob / RGB).
+**Current: v1.1 firmware + tooling overhaul — flashed & verified on hardware. No open work.**
+
+- ✅ **v1.0** — designed (`docs/DESIGN.md`), planned (`docs/PLAN.md`, 7 tasks), built, flashed &
+  verified; original firmware recovered (`reference/`).
+- ✅ **v1.1** — post-audit hardening. Adversarial audit passed (no brick/hang/corruption paths);
+  fixed encoder Volume-blip during a Caps-hold + 32-bit caps-pulse timer; `flash.sh` auto-kills
+  dfu-util wedged on `:leave` (Gotchas); caps-red strip documented macOS-dormant (`docs/DESIGN.md` §8.2).
+- ✅ **Tooling overhaul** — QMK rev + ARM toolchain pinned (`scripts/qmk.pin`); digest-pinned CI
+  (`.github/workflows/build.yml`); `flash.sh` gained `setup/doctor/lint/format/size` + pin-drift
+  warning. Firmware behavior unchanged from v1.1 (`docs/DESIGN.md` §12).
+
+_Milestone convention: new entries get one bullet (≤3 lines); details live with their owning file._
 
 ---
 
