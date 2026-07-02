@@ -85,26 +85,25 @@ Full maps and the "why" behind every choice: [`docs/DESIGN.md`](docs/DESIGN.md).
 ./scripts/flash.sh setup       # clone/checkout ~/qmk_firmware to the pinned QMK rev (new machine / bump)
 ./scripts/flash.sh size        # build + report firmware size vs the 256 KB flash budget
 ./scripts/flash.sh lint        # qmk lint (advisory)
-./scripts/flash.sh format      # clang-format the C sources (opt-in; reflows hand-aligned blocks)
+./scripts/flash.sh format      # clang-format the C sources (--check = dry run; reflows hand-aligned blocks)
 ./scripts/flash.sh doctor      # qmk doctor (toolchain preflight)
 ```
 
 - **Pinned build.** `scripts/qmk.pin` is the single source of truth for the QMK revision (`0.33.8`)
   and the ARM toolchain (`arm-none-eabi-gcc 15.2.0`, qmk_toolchains `a55a2b0`), shared by `flash.sh`
-  and CI. `compile`/`flash` warn if `~/qmk_firmware` has drifted off the pinned rev.
+  and CI. `compile`/`flash`/`lint`/`size` warn if `~/qmk_firmware` has drifted off the pinned rev.
 - **CI.** `.github/workflows/build.yml` compiles on every push in the digest-pinned `qmk_cli`
   container and uploads `gmmk_pro_rev1_ansi_gati.bin`; a SHA-verify step fails loudly if the tag moves.
-- **One-time toolchain (macOS, Apple Silicon):** `curl -fsSL https://install.qmk.fm | sh` installs the
-  `qmk` CLI **and** the qmk_toolchains ARM compiler (gcc 15.2.0) into `~/Library/Application Support/qmk`.
-  Then `./scripts/flash.sh setup` clones `~/qmk_firmware` at the pinned rev. The old
-  `brew install qmk/qmk/qmk` path is **stale** (pulls gcc 8) — see **Gotchas**.
+- **One-time toolchain (macOS, Apple Silicon):** `curl -fsSL https://install.qmk.fm | sh`, then
+  `./scripts/flash.sh setup`. Details (install dir, staying pinned, why not brew): **Gotchas**.
 - `flash.sh` symlinks `firmware/gati/` into `~/qmk_firmware/keyboards/gmmk/pro/rev1/ansi/keymaps/gati`,
   so **this repo stays the source of truth** and QMK is just the compiler.
 
 ### Enter bootloader (any of these — you can never brick the layout)
 
 1. **Fn + B** ("B for Boot").
-2. **Hold Esc while plugging in** the cable (bootmagic) — works even with broken firmware.
+2. **Hold Esc while plugging in** the cable (bootmagic) — works even with a broken keymap
+   (needs firmware that boots; a corrupt image → option 3).
 3. Physical reset button on the PCB (case-open, last resort).
 
 ### Change workflow
