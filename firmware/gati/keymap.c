@@ -1,3 +1,6 @@
+// Copyright 2026 Gati Petriashvili (@gati3478)
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 #include QMK_KEYBOARD_H
 
 enum layers { _BASE, _FN };

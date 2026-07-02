@@ -1,3 +1,6 @@
+# Copyright 2026 Gati Petriashvili (@gati3478)
+# SPDX-License-Identifier: GPL-2.0-or-later
+
 NKRO_ENABLE         = yes    # Fn+N = NK_TOGG
 MOUSEKEY_ENABLE     = yes    # knob scroll (MS_WHLU/MS_WHLD)
 OS_DETECTION_ENABLE = yes    # macOS vs Fedora branching (is_mac())

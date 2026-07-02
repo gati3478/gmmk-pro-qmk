@@ -22,6 +22,7 @@ it, the hardware it runs on, and how to build/flash it.
 | **Build pin** (QMK rev + ARM toolchain — pinned source of truth)     | `scripts/qmk.pin`                                |
 | **CI** (compile + shellcheck on push, uploads firmware artifact)     | `.github/workflows/build.yml`                    |
 | **Tooling-overhaul spec & plan** (the pin/CI work, task by task)     | `docs/superpowers/{specs,plans}/`                |
+| **Release history** (per-version changes, `vX.Y` milestones)         | [`CHANGELOG.md`](CHANGELOG.md)                   |
 | **RGB color explorer**                                               | [`docs/rgb-preview.html`](docs/rgb-preview.html) |
 | **Recovered original firmware** (provenance, not reused)             | `reference/`                                     |
 
@@ -34,7 +35,7 @@ Never let the docs and `firmware/gati/` disagree.
 
 _Single source of truth for build status — `README.md` and `docs/DESIGN.md` point here._
 
-**Current: v1.1 firmware + tooling overhaul — flashed & verified on hardware. No open work.**
+**Current: v1.2 (public repo) — v1.1 firmware behavior + tooling overhaul, flashed & verified on hardware. No open work.**
 
 - ✅ **v1.0** — designed (`docs/DESIGN.md`), planned (`docs/PLAN.md`, 7 tasks), built, flashed &
   verified; original firmware recovered (`reference/`).
@@ -44,6 +45,9 @@ _Single source of truth for build status — `README.md` and `docs/DESIGN.md` po
 - ✅ **Tooling overhaul** — QMK rev + ARM toolchain pinned (`scripts/qmk.pin`); digest-pinned CI
   (`.github/workflows/build.yml`); `flash.sh` gained `setup/doctor/lint/format/size` + pin-drift
   warning. Firmware behavior unchanged from v1.1 (`docs/DESIGN.md` §12).
+- ✅ **v1.2 — public release** (bundles the tooling overhaul above): LICENSE (GPL-2.0-or-later,
+  QMK derivative) + SPDX headers; `CHANGELOG.md`; README overhaul; repo public with GitHub
+  releases v1.0–v1.2 (v1.2 ships the hardware-verified `.bin`). Firmware behavior unchanged.
 
 _Milestone convention: new entries get one bullet (≤3 lines); details live with their owning file._
 
@@ -118,7 +122,8 @@ Full maps and the "why" behind every choice: [`docs/DESIGN.md`](docs/DESIGN.md).
 
 `edit docs/DESIGN.md` → `edit firmware/gati/*` → `./scripts/flash.sh compile` → flash → verify on
 hardware → `git commit` → `git push`. Commit after every working change; never commit `.build/`.
-Backed up to **`github.com/gati3478/gmmk-pro-qmk`** (private; `origin` is SSH → `git push` just works).
+Behavior changes also get a `CHANGELOG.md` entry under **[Unreleased]**.
+Lives at **`github.com/gati3478/gmmk-pro-qmk`** (public; `origin` is SSH → `git push` just works).
 
 ---
 

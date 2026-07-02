@@ -1,3 +1,6 @@
+// Copyright 2026 Gati Petriashvili (@gati3478)
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 #pragma once
 
 // Layer-tap (Caps = tap Caps / hold _FN): make the hold register fast when chording.
