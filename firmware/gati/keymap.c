@@ -14,6 +14,7 @@ enum custom_keycodes {
     OS_DOC_UP, OS_DOC_DN,      // document top / bottom
     KNOB_MODE,                 // (Task 3) cycle knob mode
     SIDE_TOGG,                 // (Task 6) toggle side LEDs
+    KNOB_CCW, KNOB_CW,         // Fn-layer knob turn (encoder map)
 };
 
 // Fixed combos the user binds once in macOS (Dictation / Do-Not-Disturb).
@@ -24,10 +25,32 @@ enum knob_modes { KNOB_SCROLL, KNOB_UNDO };
 static uint8_t knob_mode = KNOB_SCROLL;
 static bool side_leds_on = true;
 
-// Caps is a layer-tap: _FN commits only after TAPPING_TERM or an intercepting keypress,
-// and an encoder turn is invisible to that state machine. Track the raw Caps hold so the
-// knob routes to _FN from the first click instead of blipping Volume during that window.
-static bool caps_held = false;
+// Fn+B (QK_BOOT) fires only after a deliberate hold, so a stray chord can't drop the board
+// into DFU mid-typing. Armed in process_record_user, fired from housekeeping_task_user.
+#define BOOT_HOLD_MS 1000
+static bool     boot_held = false;
+static uint32_t boot_pressed_at;
+
+// Keys whose Fn binding is a chord outside the typing block (media row, Shot, knob, End, arrows).
+// Pressed during a pending Caps they settle it as hold at once, so a sloppy chord (Caps released
+// first) is still Fn. Typing keys — the RGB number row, B (boot) and N (NKRO) included — don't,
+// so switching language and typing on stays a Caps tap.
+static bool is_fn_chord_key(uint16_t keycode) {
+    switch (keycode) {
+        case KC_F1 ... KC_F12:
+        case OS_SHOT_CLIP:
+        case KC_MPLY:              // knob press
+        case KC_VOLD: case KC_VOLU: // knob turns (base-layer encoder map)
+        case KC_END:
+        case KC_LEFT: case KC_RGHT: case KC_UP: case KC_DOWN:
+            return true;
+        default:
+            return false;
+    }
+}
+
+// get_hold_on_other_key_press only sees the Caps key, so remember the key that interrupted it.
+static uint16_t last_pressed_keycode = KC_NO;
 
 static bool is_mac(void) {
     return detected_host_os() != OS_LINUX; // default to macOS when unsure
@@ -62,12 +85,42 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______, _______, _______,                   _______,                            _______, _______, _______, OS_WORD_L, OS_DOC_DN, OS_WORD_R
   ),
 };
+
+// Detents are key events, so a turn during a pending Caps settles it as hold (is_fn_chord_key)
+// and lands on _FN from the first click.
+const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
+  [_BASE] = { ENCODER_CCW_CW(KC_VOLD,  KC_VOLU) },
+  [_FN]   = { ENCODER_CCW_CW(KNOB_CCW, KNOB_CW) },
+};
 // clang-format on
 
+static void knob_fn_turn(bool clockwise) {
+    if (knob_mode == KNOB_SCROLL) {
+        tap_code16(clockwise ? MS_WHLU : MS_WHLD); // clockwise = wheel up (flipped per feel)
+    } else { // KNOB_UNDO
+        uint16_t undo = is_mac() ? LGUI(KC_Z)        : LCTL(KC_Z);
+        uint16_t redo = is_mac() ? LGUI(LSFT(KC_Z))  : LCTL(LSFT(KC_Z));
+        tap_code16(clockwise ? redo : undo);
+    }
+}
+
+// Runs on every raw event before the tap/hold decision, with the keycode of the current layer.
+bool pre_process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (record->event.pressed) {
+        last_pressed_keycode = keycode;
+    }
+    return true;
+}
+
+bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
+    return keycode == LT(_FN, KC_CAPS) && is_fn_chord_key(last_pressed_keycode);
+}
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    if (keycode == LT(_FN, KC_CAPS)) {   // track the Caps hold for the encoder (see caps_held)
-        caps_held = record->event.pressed;
-        return true;                     // let QMK run the layer-tap normally
+    if (keycode == QK_BOOT) {
+        boot_held       = record->event.pressed;
+        boot_pressed_at = timer_read32();
+        return false; // skip QMK's instant reset
     }
     if (!record->event.pressed) return true;
     switch (keycode) {
@@ -93,24 +146,18 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case SIDE_TOGG:
             side_leds_on = !side_leds_on;
             return false;
+        case KNOB_CCW:
+        case KNOB_CW:
+            knob_fn_turn(keycode == KNOB_CW);
+            return false;
     }
     return true;
 }
 
-bool encoder_update_user(uint8_t index, bool clockwise) {
-    if (index != 0) return false;
-    if (get_highest_layer(layer_state) == _FN || caps_held) {  // caps_held: knob works before the LT resolves
-        if (knob_mode == KNOB_SCROLL) {
-            tap_code16(clockwise ? MS_WHLU : MS_WHLD); // clockwise = wheel up (flipped per feel); MS_WH* are current names
-        } else { // KNOB_UNDO
-            uint16_t undo = is_mac() ? LGUI(KC_Z)        : LCTL(KC_Z);
-            uint16_t redo = is_mac() ? LGUI(LSFT(KC_Z))  : LCTL(LSFT(KC_Z));
-            tap_code16(clockwise ? redo : undo);
-        }
-    } else {
-        tap_code(clockwise ? KC_VOLU : KC_VOLD);
+void housekeeping_task_user(void) {
+    if (boot_held && timer_elapsed32(boot_pressed_at) >= BOOT_HOLD_MS) {
+        reset_keyboard();
     }
-    return false;
 }
 
 void keyboard_post_init_user(void) {
@@ -125,23 +172,28 @@ void keyboard_post_init_user(void) {
 }
 
 // Side diffuser strips = a functional readout, repainted every frame (never latched).
-// Priority: Caps Lock (red) > FN (sage scroll / amber undo) > base (off). Strips stay dark at
-// rest and while typing (per-key salmon reactive is a separate LED set, untouched here). When
-// the matrix is suspended/idle/off the framework skips indicators entirely, no guard needed.
+// Priority: toggled off (Fn+9) > Caps Lock (red) > FN (sage scroll / amber undo) > base (off).
+// Strips stay dark at rest and while typing (per-key salmon reactive is a separate LED set,
+// untouched here). When the matrix is suspended/idle/off the framework skips indicators
+// entirely, no guard needed.
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
-    if (!side_leds_on) return false;   // Fn+9 (SIDE_TOGG) turns the strips off
-
-    uint8_t r, g, b;
-    if (host_keyboard_led_state().caps_lock) {          // pulsing red (triangle wave, no lib deps)
-        uint32_t t = timer_read32() % 1000u;  // 32-bit avoids the ~65 s wrap hiccup in the pulse
-        uint8_t  p = (t < 500u) ? (uint8_t)(t * 255u / 500u) : (uint8_t)((1000u - t) * 255u / 500u);
-        r = p; g = 0; b = 0;
-    } else if (get_highest_layer(layer_state) == _FN) { // knob-mode color
-        if (knob_mode == KNOB_SCROLL) { r = 100; g = 190; b = 110; } // sage (scroll)
-        else                          { r = 255; g = 170; b = 40;  } // amber (undo)
-    } else {                                            // base: strips off (readout only for Fn/Caps)
-        r = 0; g = 0; b = 0;                             // per-key salmon reactive is a separate LED set, untouched
+    // Dark is painted, not skipped: otherwise an animated RGB effect shows through the strips.
+    uint8_t r = 0, g = 0, b = 0;
+    if (side_leds_on) {
+        if (host_keyboard_led_state().caps_lock) {          // pulsing red (triangle wave, no lib deps)
+            uint32_t t = timer_read32() % 1000u;  // 32-bit avoids the ~65 s wrap hiccup in the pulse
+            r = (t < 500u) ? (uint8_t)(t * 255u / 500u) : (uint8_t)((1000u - t) * 255u / 500u);
+        } else if (get_highest_layer(layer_state) == _FN) { // knob-mode color
+            if (knob_mode == KNOB_SCROLL) { r = 100; g = 190; b = 110; } // sage (scroll)
+            else                          { r = 255; g = 170; b = 40;  } // amber (undo)
+        }
     }
+
+    // rgb_matrix_set_color bypasses the global brightness; scale so Fn+5/6 dim the strips too.
+    uint8_t v = rgb_matrix_get_val();
+    r         = (uint16_t)r * v / 255;
+    g         = (uint16_t)g * v / 255;
+    b         = (uint16_t)b * v / 255;
 
     for (uint8_t i = led_min; i < led_max; i++) {
         if (HAS_FLAGS(g_led_config.flags[i], LED_FLAG_UNDERGLOW)) {

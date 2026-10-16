@@ -26,7 +26,7 @@ link_keymap() {
 # Drift can be intentional (testing a newer QMK), so this is advisory — but it makes
 # silent divergence impossible. A missing checkout is fatal: nothing can build.
 pin_check() {
-  if [ ! -d "$QMK_HOME/.git" ]; then
+  if [ ! -e "$QMK_HOME/.git" ]; then   # -e: a git worktree's .git is a file
     echo ">> flash.sh: no QMK checkout at $QMK_HOME. Run: $0 setup" >&2
     exit 1
   fi
@@ -38,9 +38,41 @@ pin_check() {
   fi
 }
 
+# qmk picks its tree from the cwd before QMK_HOME, so run it from the checkout pin_check inspected.
+prepare() {
+  pin_check
+  link_keymap
+  cd "$QMK_HOME"
+}
+
+# install.qmk.fm always fetches the latest toolchain; GCC stamps its version into the .elf's
+# .comment section, so check the compiler that actually built the image against the pin.
+toolchain_check() {
+  local used
+  used="$(grep -a -o 'GCC: ([^)]*) [0-9.]*' "$QMK_HOME/.build/${BIN_NAME%.bin}.elf" | head -1 | sed 's/.* //')" || true
+  if [ "$used" != "$QMK_GCC" ]; then
+    printf '>> flash.sh: WARNING — built with arm-none-eabi-gcc %s, pinned %s (scripts/qmk.pin).\n' \
+      "${used:-unknown}" "$QMK_GCC" >&2
+  fi
+}
+
+build() {
+  qmk compile -kb "$KB" -km "$KM"
+  toolchain_check
+}
+
+# Every descendant of pid $1 (qmk → make → bootloader-wait loop → dfu-util).
+descendants() {
+  local c
+  for c in $(pgrep -P "$1"); do
+    echo "$c"
+    descendants "$c"
+  done
+}
+
 # dfu-util intermittently wedges on the post-write `:leave` USB reset (macOS). The write is
 # already complete by the time dfu-util prints its success marker, so watch for the marker and
-# kill a still-stuck dfu-util after a short grace. See CLAUDE.md Gotchas. (Unchanged from v1.1.)
+# kill a still-stuck dfu-util after a short grace. See CLAUDE.md Gotchas.
 flash_gmmk() {
   local grace="${FLASH_LEAVE_GRACE:-10}"
   local marker="File downloaded successfully"
@@ -52,6 +84,12 @@ flash_gmmk() {
   qmk flash -kb "$KB" -km "$KM" > >(tee "$logf") 2>&1 &
   job=$!
 
+  # A script's background jobs ignore SIGINT, so Ctrl-C would orphan qmk/dfu-util and a later
+  # Fn+B would get flashed unsupervised. Tear the whole tree down instead.
+  # shellcheck disable=SC2046  # word-splitting the pid list is intended
+  # `|| true`: under set -e a pid that already exited would abort the handler before cleanup.
+  trap 'kill $(descendants "$job") "$job" 2>/dev/null || true; rm -f "$logf"; exit 130' INT TERM
+
   while kill -0 "$job" 2>/dev/null; do
     if grep -q "$marker" "$logf" 2>/dev/null; then
       waited=0
@@ -59,7 +97,7 @@ flash_gmmk() {
         sleep 1; waited=$((waited + 1))
       done
       if kill -0 "$job" 2>/dev/null; then
-        printf '\n>> flash.sh: firmware written & verified; dfu-util stuck on :leave — killing after %ss (expected on macOS; the board has already rebooted into the new firmware).\n' "$grace"
+        printf '\n>> flash.sh: firmware written; dfu-util stuck on :leave — killing after %ss (expected on macOS; the board has already rebooted into the new firmware).\n' "$grace"
         pkill -f 'dfu-util.*gmmk_pro' 2>/dev/null || true
         killed_ok=1
       fi
@@ -72,6 +110,7 @@ flash_gmmk() {
   wait "$job"
   st=$?
   set -e
+  trap - INT TERM
   rm -f "$logf"
 
   [ "$killed_ok" -eq 1 ] && return 0
@@ -79,7 +118,7 @@ flash_gmmk() {
 }
 
 cmd_setup() {
-  if [ ! -d "$QMK_HOME/.git" ]; then
+  if [ ! -e "$QMK_HOME/.git" ]; then
     echo ">> flash.sh: cloning QMK $QMK_TAG into $QMK_HOME (this is large)"
     git clone --branch "$QMK_TAG" --recurse-submodules \
       https://github.com/qmk/qmk_firmware "$QMK_HOME"
@@ -105,7 +144,7 @@ cmd_setup() {
 }
 
 cmd_size() {
-  qmk compile -kb "$KB" -km "$KM" >/dev/null
+  build >/dev/null
   local bin size pct
   bin="$QMK_HOME/$BIN_NAME"
   [ -f "$bin" ] || { echo ">> flash.sh: $bin not found after compile." >&2; exit 1; }
@@ -121,11 +160,11 @@ cmd_format() {
     exit 1
   }
   local files=("$REPO/firmware/gati/keymap.c" "$REPO/firmware/gati/config.h")
-  if [ "${1:-}" = "--check" ]; then
-    clang-format --dry-run --Werror "${files[@]}"
-  else
-    clang-format -i "${files[@]}"
-  fi
+  case "${1:-}" in
+    --check) clang-format --dry-run --Werror "${files[@]}" ;;
+    "")      clang-format -i "${files[@]}" ;;
+    *)       echo ">> flash.sh: unknown format option '$1' (only --check)" >&2; exit 1 ;;
+  esac
 }
 
 usage() {
@@ -134,8 +173,8 @@ usage() {
   cat >&"$fd" <<'EOF'
 usage: flash.sh <command>
 
-  compile            build the firmware (warns on QMK pin drift)
-  flash              build + flash (put the board in bootloader first: Fn+B)
+  compile            build the firmware (warns on QMK pin / toolchain drift)
+  flash              build + flash (bootloader first: hold Fn+B 1 s, or Esc while plugging in)
   setup              clone/checkout ~/qmk_firmware to the pinned QMK rev
   doctor             run qmk doctor (toolchain preflight)
   lint               run qmk lint on the keymap (advisory)
@@ -146,13 +185,13 @@ EOF
 }
 
 case "${1:-help}" in
-  compile) pin_check; link_keymap; qmk compile -kb "$KB" -km "$KM" ;;
-  flash)   pin_check; link_keymap; flash_gmmk ;;
+  compile) prepare; build ;;
+  flash)   prepare; build; flash_gmmk ;;   # build first so toolchain drift warns before writing
   setup)   cmd_setup ;;
   doctor)  qmk doctor ;;
-  lint)    pin_check; link_keymap; qmk lint -kb "$KB" -km "$KM" ;;
+  lint)    prepare; qmk lint -kb "$KB" -km "$KM" ;;
   format)  cmd_format "${2:-}" ;;
-  size)    pin_check; link_keymap; cmd_size ;;
+  size)    prepare; cmd_size ;;
   help|-h|--help) usage 0 ;;
   *)       echo ">> flash.sh: unknown command '${1}'" >&2; usage 1 ;;
 esac

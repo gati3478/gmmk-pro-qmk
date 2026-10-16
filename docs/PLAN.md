@@ -13,6 +13,8 @@
 > superseded: the current setup pins QMK **and** the ARM toolchain in [`../scripts/qmk.pin`](../scripts/qmk.pin)
 > (gcc 15.2.0, matched to CI), installs via `curl -fsSL https://install.qmk.fm | sh`, and compiles in CI on
 > every push. Authoritative build steps: `CLAUDE.md` §Build & flash and `docs/DESIGN.md` §12.
+> The Global Constraints and code below are also v1.0-era (e.g. teal scroll, salmon base strips,
+> `HOLD_ON_OTHER_KEY_PRESS`); the current design is `docs/DESIGN.md`.
 
 ## Global Constraints
 

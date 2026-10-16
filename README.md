@@ -39,7 +39,7 @@ Everything else is standard ANSI. Full maps and the "why" behind every choice:
 - **Reproducible.** QMK revision + ARM toolchain pinned in
   [`scripts/qmk.pin`](scripts/qmk.pin); CI builds in a digest-pinned container
   from a SHA-verified QMK clone with SHA-pinned actions.
-- **Unbrickable.** The STM32 ROM DFU bootloader is unerasable — `Fn+B`,
+- **Unbrickable.** The STM32 ROM DFU bootloader is unerasable — `Fn+B` (held 1 s),
   Esc-while-plugging-in, or the PCB reset button always recover.
 
 ## Map
@@ -49,7 +49,7 @@ Everything else is standard ANSI. Full maps and the "why" behind every choice:
 | Project brief, conventions, quickstart (**start here**) | [`CLAUDE.md`](CLAUDE.md)                         |
 | Full design — keymap, knob, RGB, side-LEDs + rationale  | [`docs/DESIGN.md`](docs/DESIGN.md)               |
 | Hardware — parts, specs, mods, spare keycaps, purchases | [`docs/HARDWARE.md`](docs/HARDWARE.md)           |
-| Build plan — toolchain → firmware → flash, task by task | [`docs/PLAN.md`](docs/PLAN.md)                   |
+| v1.0 build record — task by task (history)              | [`docs/PLAN.md`](docs/PLAN.md)                   |
 | Release history                                         | [`CHANGELOG.md`](CHANGELOG.md)                   |
 | macOS one-time settings                                 | [`docs/macos-setup.md`](docs/macos-setup.md)     |
 | RGB color explorer (open in a browser)                  | [`docs/rgb-preview.html`](docs/rgb-preview.html) |
@@ -64,13 +64,13 @@ Everything else is standard ANSI. Full maps and the "why" behind every choice:
 
 QMK rev + ARM toolchain are pinned in [`scripts/qmk.pin`](scripts/qmk.pin) and built in CI on every firmware push.
 One-time toolchain (macOS): `curl -fsSL https://install.qmk.fm | sh`, then `./scripts/flash.sh setup`.
-**Enter bootloader:** press **Fn+B**, or hold **Esc** while plugging in the cable.
+**Enter bootloader:** hold **Fn+B** for 1 s, or hold **Esc** while plugging in the cable.
 
 ## Forking this for your own board
 
 The keymap is plain mainline QMK — no VIA/Vial. Start from
-`firmware/gati/{keymap.c,config.h,rules.mk}`, adjust the `LAYOUT` and the
-handler functions (`process_record_user`, `encoder_update_user`,
+`firmware/gati/{keymap.c,config.h,rules.mk}`, adjust the `LAYOUT`, the
+`encoder_map`, and the handler functions (`process_record_user`,
 `rgb_matrix_indicators_advanced_user`), and point `scripts/flash.sh` at your
 keyboard target. `docs/DESIGN.md` explains why each piece is the way it is —
 including the ideas that were considered and rejected.

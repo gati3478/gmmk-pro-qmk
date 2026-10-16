@@ -14,14 +14,14 @@ it, the hardware it runs on, and how to build/flash it.
 | Topic                                                                | Authoritative file                               |
 | -------------------------------------------------------------------- | ------------------------------------------------ |
 | **Design** (keymap, knob, RGB, side-LEDs, rationale)                 | [`docs/DESIGN.md`](docs/DESIGN.md)               |
-| **Build steps** (toolchain → firmware → flash, task by task)         | [`docs/PLAN.md`](docs/PLAN.md)                   |
+| **v1.0 build record** (history; toolchain steps superseded below)    | [`docs/PLAN.md`](docs/PLAN.md)                   |
 | **Hardware** (parts, specs, build mods, spare keycaps, purchase log) | [`docs/HARDWARE.md`](docs/HARDWARE.md)           |
 | **macOS one-time settings** (Caps→input, Dictation, DND)             | [`docs/macos-setup.md`](docs/macos-setup.md)     |
 | **Firmware source** (the actual keymap — source of truth)            | `firmware/gati/{keymap.c,config.h,rules.mk}`     |
 | **Build/flash tool** (symlinks into QMK → compile/flash/setup/…)     | `scripts/flash.sh`                               |
 | **Build pin** (QMK rev + ARM toolchain — pinned source of truth)     | `scripts/qmk.pin`                                |
 | **CI** (compile + shellcheck on push, uploads firmware artifact)     | `.github/workflows/build.yml`                    |
-| **Tooling-overhaul spec & plan** (the pin/CI work, task by task)     | `docs/superpowers/{specs,plans}/`                |
+| **Tooling-overhaul spec & plan** (history of the pin/CI work)        | `docs/superpowers/{specs,plans}/`                |
 | **Release history** (per-version changes, `vX.Y` milestones)         | [`CHANGELOG.md`](CHANGELOG.md)                   |
 | **RGB color explorer**                                               | [`docs/rgb-preview.html`](docs/rgb-preview.html) |
 | **Recovered original firmware** (provenance, not reused)             | `reference/`                                     |
@@ -31,16 +31,16 @@ Never let the docs and `firmware/gati/` disagree.
 
 ---
 
-## Status (2026-07-02)
+## Status (2026-10-16)
 
 _Single source of truth for build status — `README.md` and `docs/DESIGN.md` point here._
 
-**Current: v1.2 (public repo) — v1.1 firmware behavior + tooling overhaul, flashed & verified on hardware. No open work.**
+**Current: v1.2 released. v1.3 (audit fixes) is on `main`, compiled clean — awaiting flash + hardware verification before the `v1.3` release.**
 
 - ✅ **v1.0** — designed (`docs/DESIGN.md`), planned (`docs/PLAN.md`, 7 tasks), built, flashed &
   verified; original firmware recovered (`reference/`).
 - ✅ **v1.1** — post-audit hardening. Adversarial audit passed (no brick/hang/corruption paths);
-  fixed encoder Volume-blip during a Caps-hold + 32-bit caps-pulse timer; `flash.sh` auto-kills
+  encoder Volume-blip "fix" during a Caps-hold (a no-op — see v1.3) + 32-bit caps-pulse timer; `flash.sh` auto-kills
   dfu-util wedged on `:leave` (Gotchas); caps-red strip documented macOS-dormant (`docs/DESIGN.md` §8.2).
 - ✅ **Tooling overhaul** — QMK rev + ARM toolchain pinned (`scripts/qmk.pin`); digest-pinned CI
   (`.github/workflows/build.yml`); `flash.sh` gained `setup/doctor/lint/format/size` + pin-drift
@@ -48,6 +48,8 @@ _Single source of truth for build status — `README.md` and `docs/DESIGN.md` po
 - ✅ **v1.2 — public release** (bundles the tooling overhaul above): LICENSE (GPL-2.0-or-later,
   QMK derivative) + SPDX headers; `CHANGELOG.md`; README overhaul; repo public with GitHub
   releases v1.0–v1.2 (v1.2 ships the hardware-verified `.bin`). Firmware behavior unchanged.
+- 🔧 **v1.3 — audit fixes** (2026-10-16, unverified on hardware): rolled Caps taps stay taps, sloppy nav chords stay
+  Fn, encoder map (real knob/Caps fix), 1 s Fn+B, strips follow brightness, QMK 0.34.7; tooling hardening.
 
 _Milestone convention: new entries get one bullet (≤3 lines); details live with their owning file._
 
@@ -84,38 +86,45 @@ Full maps and the "why" behind every choice: [`docs/DESIGN.md`](docs/DESIGN.md).
   `detected_host_os()` (`is_mac()` helper); unsure → macOS.
 - Pure **mainline QMK**, no VIA/Vial. The C source in this repo is the source of truth.
 - The full `LAYOUT` is written once and not re-edited; behavior changes go in handler functions
-  (`process_record_user`, `encoder_update_user`, `rgb_matrix_indicators_advanced_user`) + config.
-- **`reference/` is frozen provenance.** Never edit its contents — enforced by a PreToolUse hook
-  in `.claude/settings.json`.
+  (`process_record_user`, `rgb_matrix_indicators_advanced_user`, `housekeeping_task_user`), the
+  `encoder_map`, and config.
+- **`reference/` is frozen provenance.** Never edit its contents. A PreToolUse hook in
+  `.claude/settings.json` blocks Edit/Write there (not Bash); CI's `provenance` job fails any push
+  that changes the `reference/` tree.
 
 ---
 
 ## Build & flash
 
 ```bash
-./scripts/flash.sh compile     # build only (warns if the QMK checkout drifts from the pin)
-./scripts/flash.sh flash       # build + flash (put board in bootloader first: Fn+B)
+./scripts/flash.sh compile     # build only (warns on QMK-rev or compiler drift from the pin)
+./scripts/flash.sh flash       # build + flash (bootloader first: hold Fn+B 1 s)
 ./scripts/flash.sh setup       # clone/checkout ~/qmk_firmware to the pinned QMK rev (new machine / bump)
 ./scripts/flash.sh size        # build + report firmware size vs the 256 KB flash budget
 ./scripts/flash.sh lint        # qmk lint (advisory)
-./scripts/flash.sh format      # clang-format the C sources (--check = dry run; reflows hand-aligned blocks)
+./scripts/flash.sh format      # clang-format the C sources (--check = dry run; fails on the hand-aligned blocks — not a gate)
 ./scripts/flash.sh doctor      # qmk doctor (toolchain preflight)
 ```
 
-- **Pinned build.** `scripts/qmk.pin` is the single source of truth for the QMK revision (`0.33.8`)
-  and the ARM toolchain (`arm-none-eabi-gcc 15.2.0`, qmk_toolchains `a55a2b0`), shared by `flash.sh`
-  and CI. `compile`/`flash`/`lint`/`size` warn if `~/qmk_firmware` has drifted off the pinned rev.
+- **Pinned build.** `scripts/qmk.pin` is the single source of truth for the QMK revision (`0.34.7`)
+  and the ARM toolchain (`QMK_GCC=15.2.0`, qmk_toolchains `a55a2b0`), shared by `flash.sh`
+  and CI. `compile`/`flash`/`lint`/`size` warn if `~/qmk_firmware` has drifted off the pinned rev;
+  builds warn (CI fails) when the gcc version stamped in the `.elf` isn't `QMK_GCC`.
 - **CI.** `.github/workflows/build.yml` compiles every firmware-relevant push (doc-only pushes are
   skipped) in the digest-pinned `qmk_cli` container and uploads `gmmk_pro_rev1_ansi_gati.bin`; a
-  SHA-verify step fails loudly if the tag moves, and a shellcheck job gates `flash.sh`.
+  SHA-verify step fails loudly if the tag moves; shellcheck and `provenance` jobs run alongside.
+  Post-push checks only — `main` has no branch protection.
 - **One-time toolchain (macOS, Apple Silicon):** `curl -fsSL https://install.qmk.fm | sh`, then
   `./scripts/flash.sh setup`. Details (install dir, staying pinned, why not brew): **Gotchas**.
 - `flash.sh` symlinks `firmware/gati/` into `~/qmk_firmware/keyboards/gmmk/pro/rev1/ansi/keymaps/gati`,
   so **this repo stays the source of truth** and QMK is just the compiler.
+- **Output is deterministic.** The `.bin` lands at `~/qmk_firmware/gmmk_pro_rev1_ansi_gati.bin`, byte-identical
+  run to run. A change claimed behavior-neutral must reproduce the previous build's sha256 at the
+  same pin (`shasum -a 256 <bin>`; v1.2 @ 0.33.8 = `719fd234…`).
 
 ### Enter bootloader (any of these — you can never brick the layout)
 
-1. **Fn + B** ("B for Boot").
+1. **Hold Fn + B for 1 s** ("B for Boot"; the hold stops a stray chord from triggering it).
 2. **Hold Esc while plugging in** the cable (bootmagic) — works even with a broken keymap
    (needs firmware that boots; a corrupt image → option 3).
 3. Physical reset button on the PCB (case-open, last resort).
@@ -125,6 +134,11 @@ Full maps and the "why" behind every choice: [`docs/DESIGN.md`](docs/DESIGN.md).
 `edit docs/DESIGN.md` → `edit firmware/gati/*` → `./scripts/flash.sh compile` → flash → verify on
 hardware → `git commit` → `git push`. Commit after every working change; never commit `.build/`.
 Behavior changes also get a `CHANGELOG.md` entry under **[Unreleased]**.
+No automated tests: compile + lint prove only that it builds; **verified** means flashed and exercised on the board.
+
+**Release:** `CHANGELOG.md` `[Unreleased]` → `[X.Y] - date` (+ compare link) → tag `vX.Y` →
+`gh release create vX.Y ~/qmk_firmware/gmmk_pro_rev1_ansi_gati.bin` — the hardware-verified local build,
+not CI's artifact (`docs/DESIGN.md` §12).
 Lives at **`github.com/gati3478/gmmk-pro-qmk`** (public; `origin` is SSH → `git push` just works).
 
 ---
@@ -142,6 +156,9 @@ Lives at **`github.com/gati3478/gmmk-pro-qmk`** (public; `origin` is SSH → `gi
   `host_macosARM64` asset of qmk_toolchains `v15.2.0-1` into that dir manually if QMK ships a newer one.
 - **Bumping QMK or the toolchain:** edit `scripts/qmk.pin`, `./scripts/flash.sh setup`, recompile,
   re-verify on hardware, reflash. CI's SHA-verify guards against a tag silently moving underneath you.
+- **`process_record_user` sees a layer-tap press only after it settles** (timeout, interrupting key,
+  or release), never while it's pending. Raw-press logic belongs in `pre_process_record_user`.
+  This is why v1.1's `caps_held` knob fix was a no-op; the encoder map (detents = key events) replaced it.
 - **The IDE lies about `keymap.c`.** Standalone clang shows false `undeclared identifier` errors (it
   lacks QMK's include context). `./scripts/flash.sh compile` is the only source of truth.
 - **QMK renames keycodes across releases.** This build already hit `RGB_*`→`RM_*` and

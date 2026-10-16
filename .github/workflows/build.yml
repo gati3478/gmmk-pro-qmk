@@ -1,7 +1,7 @@
 name: build
 on:
   push:
-    paths-ignore: ["**.md", "docs/**", "reference/**"]
+    paths-ignore: ["**.md", "docs/**"] # reference/ must trigger: the provenance job guards it
   pull_request:
   workflow_dispatch:
 
@@ -12,12 +12,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # qmk_cli :latest as of 2026-07-01 (arm-none-eabi-gcc 15.2.0, qmk_toolchains @ a55a2b0).
+    # qmk_cli 1.2.0 (= :latest as of 2026-10-16; arm-none-eabi-gcc 15.2.0, qmk_toolchains @ a55a2b0).
     # Digest-pinned so the CI toolchain is fully reproducible run-to-run.
     container: ghcr.io/qmk/qmk_cli@sha256:b7d7fa8fb4432b569931de5ad59098cb788f440ed61a62c5126746b71aee0f4a
     steps:
       - name: Checkout firmware repo
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: fw
 
@@ -39,6 +39,12 @@ jobs:
         working-directory: qmk
         run: qmk compile -kb gmmk/pro/ansi -km gati
 
+      - name: Assert pinned toolchain
+        run: |
+          used=$(grep -a -o 'GCC: ([^)]*) [0-9.]*' qmk/.build/gmmk_pro_rev1_ansi_gati.elf | head -1 | sed 's/.* //')
+          test "$used" = "$QMK_GCC" \
+            || { echo "::error::built with arm-none-eabi-gcc $used, pinned $QMK_GCC"; exit 1; }
+
       - name: Lint (advisory)
         working-directory: qmk
         run: qmk lint -kb gmmk/pro/ansi -km gati || true
@@ -50,7 +56,7 @@ jobs:
           echo "### Firmware: $size bytes ($((size * 100 / 262144))% of 256 KB)" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload firmware artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: gmmk_pro_rev1_ansi_gati
           path: qmk/gmmk_pro_rev1_ansi_gati.bin
@@ -60,6 +66,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: shellcheck flash.sh
         run: shellcheck -x scripts/flash.sh
+
+  provenance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      # git tree hash of reference/ (frozen provenance). Changing it is never intended.
+      REFERENCE_TREE: b224ac4b1acd25c2cd1c464120e58481f1b80a7f
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: reference/ is unchanged
+        run: |
+          test "$(git rev-parse HEAD:reference)" = "$REFERENCE_TREE" \
+            || { echo "::error::reference/ changed — it is frozen provenance (docs/DESIGN.md §3)"; exit 1; }

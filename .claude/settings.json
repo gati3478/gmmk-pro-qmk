@@ -6,7 +6,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -e '(.tool_input.file_path // \"\") | test(\"/reference/\")' >/dev/null 2>&1 && { echo 'reference/ is frozen provenance (recovered original firmware) — never edit it. See docs/DESIGN.md §3.' >&2; exit 2; } || exit 0"
+            "command": "command -v jq >/dev/null 2>&1 || { echo 'reference/ guard: jq not found, refusing Edit/Write until it is installed.' >&2; exit 2; }; p=$(jq -er '.tool_input.file_path // \"\"' 2>/dev/null) || { echo 'reference/ guard: unreadable hook input, refusing.' >&2; exit 2; }; lc() { printf '%s' \"$1\" | tr '[:upper:]' '[:lower:]'; }; case \"$(lc \"$p\")\" in \"$(lc \"${CLAUDE_PROJECT_DIR:-$PWD}\")\"/reference/*|reference/*) echo 'reference/ is frozen provenance (recovered original firmware): never edit it. See docs/DESIGN.md §3.' >&2; exit 2 ;; esac; exit 0",
+            "onFailure": "block"
           }
         ]
       }

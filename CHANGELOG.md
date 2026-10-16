@@ -9,10 +9,56 @@ verified on hardware before it's tagged.
 
 ## [Unreleased]
 
+Repo audit (2026-10-16). Built and compiled clean; **not yet verified on
+hardware**.
+
+### Fixed
+
+- A Caps tap rolled into a typing key (Caps released first) is a Caps tap
+  again. `HOLD_ON_OTHER_KEY_PRESS` resolved every roll as Fn, so a fast
+  language-switch-then-type could enter the bootloader (Caps→B), toggle NKRO
+  (Caps→N), change persisted RGB settings (Caps→`/1–8), or silently drop the
+  switch. Now `PERMISSIVE_HOLD`: only a key tapped inside the hold is Fn.
+- Sloppy Fn chords via Caps work: a nav/media/knob key (F-row, Shot, knob,
+  End, arrows) pressed during a Caps press makes it Fn at once, even if Caps
+  is released first. Trade-off: a language switch rolled straight into one of
+  these keys reads as Fn too — the two are the same key events.
+- Tapping Caps and holding it again within 200 ms gives Fn, not a repeated
+  Caps tap (`QUICK_TAP_TERM 0`).
+- Turning the knob in the first 200 ms of a Caps hold acts on Fn — no Volume
+  blip, no stray Caps tap. The knob is now an encoder map, so each detent is a
+  key event that settles the layer-tap. Replaces v1.1's `caps_held`, which
+  never worked (`process_record_user` sees a layer-tap press only after it
+  settles).
+- Side strips toggled off (Fn+9) stay dark under any RGB effect; before, an
+  animated effect showed through.
+- Side strips follow the global brightness (Fn+5/6); before, they ignored it
+  and ran brighter than the keys.
+- `flash.sh`: Ctrl-C during `flash` now kills the qmk/dfu-util tree (before,
+  it kept running and flashed the next Fn+B unsupervised); runs qmk from the
+  pinned checkout; accepts git-worktree checkouts; rejects unknown `format`
+  options instead of rewriting files.
+
+### Changed
+
+- Bootloader key (Fn+B) needs a 1 s hold.
+- QMK 0.33.8 → 0.34.7 (no `gmmk/pro` changes; picks up the reactive-effect
+  last-hit tracker fix, qmk/qmk_firmware#26306).
+- The toolchain pin is checked: `QMK_GCC` in `scripts/qmk.pin`; builds warn
+  and CI fails when the `.elf`'s gcc differs.
+- CI actions moved to Node 24 (checkout v7.0.1, upload-artifact v7.0.2).
+
 ### Added
 
-- Claude Code guard hook (`.claude/settings.json`): edits under `reference/`
-  are blocked — frozen provenance is now enforced, not just documented.
+- Claude Code guard hook (`.claude/settings.json`): Edit/Write under
+  `reference/` is blocked, case-insensitively, failing closed when `jq` is
+  missing.
+- CI `provenance` job: fails if the `reference/` git tree changes.
+
+### Docs
+
+- Corrected stale lines across `DESIGN.md`, `README.md`, `CLAUDE.md`,
+  `scripts/qmk.pin`, and this file.
 
 ## [1.2] - 2026-07-02
 
@@ -27,7 +73,7 @@ behavior as v1.1, rebuilt on the modern toolchain and re-verified on hardware
   source of truth shared by `flash.sh` and CI.
 - CI (`.github/workflows/build.yml`): compiles every firmware-relevant push in
   a digest-pinned `qmk_cli` container, SHA-verifies the QMK tag, uploads the
-  firmware artifact; a shellcheck job gates `flash.sh`; GitHub Actions are
+  firmware artifact; a shellcheck job checks `flash.sh`; GitHub Actions are
   SHA-pinned; doc-only pushes are skipped.
 - `flash.sh` subcommands: `setup` / `doctor` / `lint` / `format` / `size`,
   plus a pin-drift warning on every build.
@@ -50,6 +96,7 @@ passed: no brick / hang / corruption paths.
 
 - Encoder no longer blips Volume when turned during the Caps-hold tapping
   window (raw `caps_held` tracking bypasses the layer-tap state machine).
+  **Correction:** this never worked — fixed for real in [Unreleased].
 - Caps-lock side-strip pulse timer widened to 32-bit, killing a ~65 s wrap
   hiccup.
 
@@ -83,7 +130,7 @@ First working build — flashed & verified on hardware.
 - EEPROM version stamp (`GATI_EECONFIG_VERSION`) re-applies RGB defaults
   exactly once per bump — DFU flashing never erases EEPROM.
 - `scripts/flash.sh` (symlinks the keymap into a QMK checkout, builds,
-  flashes); original factory-era firmware recovered and preserved under
+  flashes); the original pre-repo QMK build (Windows-era) recovered and preserved under
   `reference/` for provenance.
 
 [Unreleased]: https://github.com/gati3478/gmmk-pro-qmk/compare/v1.2...HEAD

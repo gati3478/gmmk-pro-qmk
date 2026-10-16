@@ -85,8 +85,7 @@ matching row.
 - **Arrows:** dedicated `←↑↓→`
 - **Accent caps:** green `Insert`, sage **spacebar**, salmon `7/Home`, salmon shift, enter `⤶`
 
-**Planned relabel** (from the design): bottom row → `Ctrl · Alt · Code` (left) and `Ctrl · Alt · Fn`
-(right), so the caps read honestly against the keycodes (`LCTL·LALT·LGUI` / `RCTL·RALT·MO(_FN)`).
+The installed caps already match the keycodes; no relabel is planned.
 
 ---
 
