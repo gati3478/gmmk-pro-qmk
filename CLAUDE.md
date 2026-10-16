@@ -88,8 +88,8 @@ Full maps and the "why" behind every choice: [`docs/DESIGN.md`](docs/DESIGN.md).
 - The full `LAYOUT` is written once and not re-edited; behavior changes go in handler functions
   (`process_record_user`, `rgb_matrix_indicators_advanced_user`, `housekeeping_task_user`), the
   `encoder_map`, and config.
-- **`reference/` is frozen provenance.** Never edit its contents. A PreToolUse hook in
-  `.claude/settings.json` blocks Edit/Write there (not Bash); CI's `provenance` job fails any push
+- **`reference/` is frozen provenance.** Never edit its contents. A PreToolUse hook
+  (`.claude/hooks/guard-reference.sh`) blocks Edit/Write there (not Bash); CI's `provenance` job fails any push
   that changes the `reference/` tree.
 
 ---

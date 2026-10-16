@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "command -v jq >/dev/null 2>&1 || { echo 'reference/ guard: jq not found, refusing Edit/Write until it is installed.' >&2; exit 2; }; p=$(jq -er '.tool_input.file_path // \"\"' 2>/dev/null) || { echo 'reference/ guard: unreadable hook input, refusing.' >&2; exit 2; }; lc() { printf '%s' \"$1\" | tr '[:upper:]' '[:lower:]'; }; case \"$(lc \"$p\")\" in \"$(lc \"${CLAUDE_PROJECT_DIR:-$PWD}\")\"/reference/*|reference/*) echo 'reference/ is frozen provenance (recovered original firmware): never edit it. See docs/DESIGN.md §3.' >&2; exit 2 ;; esac; exit 0",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-reference.sh",
             "onFailure": "block"
           }
         ]

@@ -50,9 +50,9 @@ hardware**.
 
 ### Added
 
-- Claude Code guard hook (`.claude/settings.json`): Edit/Write under
-  `reference/` is blocked, case-insensitively, failing closed when `jq` is
-  missing.
+- Claude Code guard hook (`.claude/hooks/guard-reference.sh`): Edit/Write
+  under this repo's `reference/` is blocked — path-normalized (`..`, `//`),
+  case-insensitive, failing closed when `jq` is missing.
 - CI `provenance` job: fails if the `reference/` git tree changes.
 
 ### Docs

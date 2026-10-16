@@ -244,7 +244,7 @@ NKRO_ENABLE         = yes
 ├─ CLAUDE.md                     # project instructions / SSOT pointer
 ├─ README.md                     # what this is, how to build & flash
 ├─ CHANGELOG.md · LICENSE        # release history · GPL-2.0-or-later
-├─ .claude/settings.json         # agent guard hook: blocks edits under reference/
+├─ .claude/                      # settings.json wires hooks/guard-reference.sh: blocks edits under reference/
 ├─ docs/
 │  ├─ DESIGN.md                  # this spec
 │  ├─ PLAN.md                    # task-by-task build record (v1.0)
