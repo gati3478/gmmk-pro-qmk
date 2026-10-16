@@ -71,8 +71,9 @@ Prev Play Next · Mute Vol− Vol+.
 **RGB:** dark base, **salmon** bloom on keypress (`SOLID_REACTIVE_SIMPLE`), 64% brightness,
 off on idle (8 min) & Mac sleep.
 
-**Side strips = a readout** (priority): sleep/idle→off ▸ **Caps Lock → pulsing red** ▸
-**Fn held → knob-mode color** (sage scroll / amber undo) ▸ **base → off** (per-key salmon carries typing).
+**Side strips = a readout** (priority): sleep/idle/RGB-off→off ▸ Fn+9 toggle→off ▸
+**Caps Lock → pulsing red** ▸ **Fn held → knob-mode color** (sage scroll / amber undo) ▸
+**base → off** (per-key salmon carries typing).
 
 Full maps and the "why" behind every choice: [`docs/DESIGN.md`](docs/DESIGN.md).
 

@@ -125,7 +125,7 @@ Hold Caps or Fn. Unlisted keys are transparent.
 
 ### 6.2 Fn number row — RGB controls (set once, forget)
 
-`` Fn+` `` = `RM_TOGG` · 1 `RM_NEXT` · 2 `RM_PREV` · 3 `RM_HUEU` · 4 `RM_SATU` · 5 `RM_VALU` · 6 `RM_VALD` · 7 `RM_SPDU` · 8 `RM_SPDD` · 9 = side-LED toggle (custom). (RGB-**matrix** keycodes; mainline QMK renamed the old `RGB_*` lighting keycodes to `RM_*`.)
+`` Fn+` `` = `RM_TOGG` · 1 `RM_NEXT` · 2 `RM_PREV` · 3 `RM_HUEU` · 4 `RM_SATU` · 5 `RM_VALU` · 6 `RM_VALD` · 7 `RM_SPDU` · 8 `RM_SPDD` · 9 = side-LED toggle (custom). (RGB-**matrix** keycodes; mainline QMK renamed the old `RGB_*` lighting keycodes to `RM_*`.) Shift reverses any `RM_*` step key (QMK built-in): `Shift+Fn+3` lowers hue, `Shift+Fn+4` lowers saturation — the two with no opposite key on the layer.
 
 ### 6.3 Fn — navigation & system
 
@@ -171,16 +171,16 @@ Hold Caps or Fn. Unlisted keys are transparent.
 
 Driven in `rgb_matrix_indicators_advanced_user`, overriding the GMMK Pro edge-LED indices each frame (never latched — this is the structural fix for the old "caps stuck lit" bug). Priority high → low:
 
-| State                                     | Both side strips                                                                                       |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| USB suspended / idle-timed-out            | Off                                                                                                    |
-| Strips toggled off (`Fn+9`)               | Off — painted black, so they stay dark under any RGB effect                                            |
-| **Caps Lock ON** (real)                   | **Pulsing red** `RGB(255,0,0)` (triangle)                                                              |
-| **FN layer active** — knob mode Scroll    | **Sage** `RGB(100,190,110)`                                                                            |
-| **FN layer active** — knob mode Undo/Redo | **Amber** `RGB(255,170,40)`                                                                            |
-| Base                                      | **Off** — the strips are a pure Fn/Caps readout; per-key salmon reactive (keylight LEDs) is unaffected |
+| State                                                 | Both side strips                                                                                       |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| USB suspended / idle-timed-out / RGB off (`` Fn+` ``) | Off — QMK skips the indicator callback; `` Fn+` `` is saved to EEPROM, so it survives a replug         |
+| Strips toggled off (`Fn+9`)                           | Off — painted black, so they stay dark under any RGB effect; RAM-only, back on after a replug          |
+| **Caps Lock ON** (real)                               | **Pulsing red** `RGB(255,0,0)` (triangle)                                                              |
+| **FN layer active** — knob mode Scroll                | **Sage** `RGB(100,190,110)`                                                                            |
+| **FN layer active** — knob mode Undo/Redo             | **Amber** `RGB(255,170,40)`                                                                            |
+| Base                                                  | **Off** — the strips are a pure Fn/Caps readout; per-key salmon reactive (keylight LEDs) is unaffected |
 
-Dark at rest — the strips stay off during normal typing (the per-key salmon ripple carries that). When lit they carry three facts: that you're on the Fn layer, which knob mode is live, and the caps-lock safety net. Colors above are at full brightness and scale with the global RGB value (`Fn+5`/`Fn+6`), like the per-key LEDs. Colors are trivially tunable in source.
+Dark at rest — the strips stay off during normal typing (the per-key salmon ripple carries that). When lit they carry three facts: that you're on the Fn layer, which knob mode is live, and the caps-lock safety net. Colors above are at full brightness and scale with the global RGB value (`Fn+5`/`Fn+6`), like the per-key LEDs — at value 0, dark in every state. Colors are trivially tunable in source.
 
 **macOS caveat — the Caps-Lock (red) row is effectively a Linux-only readout.** On macOS the physical Caps is remapped to _switch input source_ (`docs/macos-setup.md`), so the host never reports caps-lock ON and the red pulse **never fires there**. On Fedora, tapping Caps toggles real caps-lock, so it lights as designed. This is intended, not a defect — the pulse is a caps-lock safety net and only has a job where caps-lock can occur; on the primary (macOS) machine this top-priority strip state is simply dormant.
 
