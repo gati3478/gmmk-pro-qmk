@@ -35,7 +35,7 @@ Never let the docs and `firmware/gati/` disagree.
 
 _Single source of truth for build status — `README.md` and `docs/DESIGN.md` point here._
 
-**Current: v1.2 released. v1.3 (audit fixes) is on `main`, compiled clean — awaiting flash + hardware verification before the `v1.3` release.**
+**Current: v1.3 released.**
 
 - ✅ **v1.0** — designed (`docs/DESIGN.md`), planned (`docs/PLAN.md`, 7 tasks), built, flashed &
   verified; original firmware recovered (`reference/`).
@@ -48,7 +48,7 @@ _Single source of truth for build status — `README.md` and `docs/DESIGN.md` po
 - ✅ **v1.2 — public release** (bundles the tooling overhaul above): LICENSE (GPL-2.0-or-later,
   QMK derivative) + SPDX headers; `CHANGELOG.md`; README overhaul; repo public with GitHub
   releases v1.0–v1.2 (v1.2 ships the hardware-verified `.bin`). Firmware behavior unchanged.
-- 🔧 **v1.3 — audit fixes** (2026-10-16, unverified on hardware): rolled Caps taps stay taps, sloppy nav chords stay
+- ✅ **v1.3 — audit fixes** (2026-10-16, hardware-verified): rolled Caps taps stay taps, sloppy nav chords stay
   Fn, encoder map (real knob/Caps fix), 1 s Fn+B, strips follow brightness, QMK 0.34.7; tooling hardening.
 
 _Milestone convention: new entries get one bullet (≤3 lines); details live with their owning file._
@@ -120,7 +120,7 @@ Full maps and the "why" behind every choice: [`docs/DESIGN.md`](docs/DESIGN.md).
   so **this repo stays the source of truth** and QMK is just the compiler.
 - **Output is deterministic.** The `.bin` lands at `~/qmk_firmware/gmmk_pro_rev1_ansi_gati.bin`, byte-identical
   run to run. A change claimed behavior-neutral must reproduce the previous build's sha256 at the
-  same pin (`shasum -a 256 <bin>`; v1.2 @ 0.33.8 = `719fd234…`).
+  same pin (`shasum -a 256 <bin>`; v1.3 @ 0.34.7 = `0a62bd2c…`).
 
 ### Enter bootloader (any of these — you can never brick the layout)
 

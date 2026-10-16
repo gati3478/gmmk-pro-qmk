@@ -9,16 +9,18 @@ verified on hardware before it's tagged.
 
 ## [Unreleased]
 
-Repo audit (2026-10-16). Built and compiled clean; **not yet verified on
-hardware**.
+## [1.3] - 2026-10-16
+
+Repo audit fixes. Flashed and verified on hardware (tap-hold, knob, side
+strips, boot guard).
 
 ### Fixed
 
 - A Caps tap rolled into a typing key (Caps released first) is a Caps tap
   again. `HOLD_ON_OTHER_KEY_PRESS` resolved every roll as Fn, so a fast
   language-switch-then-type could enter the bootloader (Caps→B), toggle NKRO
-  (Caps→N), change persisted RGB settings (Caps→`/1–8), or silently drop the
-  switch. Now `PERMISSIVE_HOLD`: only a key tapped inside the hold is Fn.
+  (Caps→N), change persisted RGB settings (Caps→`` ` ``/1–8), or silently drop
+  the switch. Now `PERMISSIVE_HOLD`: only a key tapped inside the hold is Fn.
 - Sloppy Fn chords via Caps work: a nav/media/knob key (F-row, Shot, knob,
   End, arrows) pressed during a Caps press makes it Fn at once, even if Caps
   is released first. Trade-off: a language switch rolled straight into one of
@@ -133,7 +135,8 @@ First working build — flashed & verified on hardware.
   flashes); the original pre-repo QMK build (Windows-era) recovered and preserved under
   `reference/` for provenance.
 
-[Unreleased]: https://github.com/gati3478/gmmk-pro-qmk/compare/v1.2...HEAD
+[Unreleased]: https://github.com/gati3478/gmmk-pro-qmk/compare/v1.3...HEAD
+[1.3]: https://github.com/gati3478/gmmk-pro-qmk/compare/v1.2...v1.3
 [1.2]: https://github.com/gati3478/gmmk-pro-qmk/compare/v1.1...v1.2
 [1.1]: https://github.com/gati3478/gmmk-pro-qmk/compare/v1.0...v1.1
 [1.0]: https://github.com/gati3478/gmmk-pro-qmk/releases/tag/v1.0
