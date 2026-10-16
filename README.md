@@ -77,8 +77,8 @@ including the ideas that were considered and rejected.
 
 ## Status
 
-**v1.2** — hardware-verified: v1.1 firmware behavior plus the reproducible
-build chain and public-release polish. Live status: [`CLAUDE.md`](CLAUDE.md)
+**v1.3** — hardware-verified: audit fixes to the Caps tap-hold, knob, side
+strips and bootloader key, on QMK 0.34.7. Live status: [`CLAUDE.md`](CLAUDE.md)
 §Status · versions: [`CHANGELOG.md`](CHANGELOG.md) · flashable `.bin`:
 [Releases](https://github.com/gati3478/gmmk-pro-qmk/releases).
 
